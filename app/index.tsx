@@ -21,6 +21,8 @@ export default function Index() {
 
                   <DepartmentCounter departmentName="Internal Affairs" />
 
+                  <DepartmentCounter departmentName="Banana" />
+
                 </View>
             </View>
         </View>

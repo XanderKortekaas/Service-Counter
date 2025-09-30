@@ -6,17 +6,22 @@ function DepartmentCounter({departmentName})
 {
     const [count, setCount] = useState(0);
     
-      function handleIncrement()
-      {
+      
+    function handleIncrement()
+    {
         setCount(count + 1);
-      }
+    }
     
-      function handleDecrement()
-      {
+    function handleDecrement()
+    {
         if(count >0)
         {
           setCount(count -1);
         }
+    }
+    function handleReset()
+    {
+        setCount(0);
     }
 
     return (
@@ -37,6 +42,13 @@ function DepartmentCounter({departmentName})
                 style={[styles.button, styles.button_layout]}
             >
                 <Text style={styles.button_text}>+</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+            onPress ={handleReset}
+            style = {[styles.button, styles.button_layout]}
+            >
+                <Text style ={styles.button_text}>Reset</Text>
             </TouchableOpacity>
         </View>
     );

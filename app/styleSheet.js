@@ -15,12 +15,12 @@ const styles = StyleSheet.create({
     "flexDirection": "column",
     "alignItems": "center",
     "fontSize": 48, 
-    "color": Colors.GREEN_200, 
+    "color": Colors.BLUE_700 , 
   },
   "counter_container": {
     "flexDirection": "row",
     "alignItems": "center",
-    "width": 1000,
+    "width": 1500,
     "height": 150,
     "columnGap": 40, 
   },
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   "button": {
     "backgroundColor": Colors.GRAY_300,
-    "borderRadius": 10,
+    "borderRadius": 15,
   },
   "button_layout": {
     "justifyContent": "center",
@@ -49,14 +49,15 @@ const styles = StyleSheet.create({
   "button_svg":{
   },
   "button_text": {
-    "justifyContent": "center",
+    "marginTop":-12.5,
     "fontSize": 75,
     "color": Colors.GRAY_900,
   },
   "App": {
+    "flex": 0.5,
   },
   "App-container": {
-    "flex": 2,
+    "flex": 1,
     "flexDirection": "column",
     "alignItems": "center"
   },

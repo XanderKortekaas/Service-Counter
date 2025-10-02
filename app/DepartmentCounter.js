@@ -1,45 +1,38 @@
-import { useState } from 'react';
-import { Text, TouchableOpacity, View } from "react-native";
-import styles from './styleSheet.js';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Button } from 'react-native';
+import { createTables, getDepartment, updateDepartment } from './database';
 
-function DepartmentCounter({departmentName})
-{
-    const [count, setCount] = useState(0);
-    
-      function handleIncrement()
-      {
-        setCount(count + 1);
-      }
-    
-      function handleDecrement()
-      {
-        if(count >0)
-        {
-          setCount(count -1);
-        }
-    }
+function DepartmentCounter({ departmentName }) {
+  const [count, setCount] = useState(0);
 
-    return (
-        <View style={styles.counter_container}>
-            <Text style={styles.counter_section_h1}>
-                {departmentName}: {count}
-            </Text>
+  useEffect(() => {
+    createTables();
+    getDepartment(departmentName, setCount);
+  }, []);
 
-            <TouchableOpacity 
-                onPress={handleDecrement} 
-                style={[styles.button, styles.button_layout]}
-            >
-                <Text style={styles.button_text}>-</Text>
-            </TouchableOpacity>
-        
-            <TouchableOpacity 
-                onPress={handleIncrement} 
-                style={[styles.button, styles.button_layout]}
-            >
-                <Text style={styles.button_text}>+</Text>
-            </TouchableOpacity>
-        </View>
-    );
+  const handleIncrement = () => {
+    const newCount = count + 1;
+    setCount(newCount);
+    updateDepartment(departmentName, newCount);
+  };
+
+  const handleDecrement = () => {
+    const newCount = Math.max(0, count - 1);
+    setCount(newCount);
+    updateDepartment(departmentName, newCount);
+  };
+
+  return (
+    <View style={{ margin: 10, alignItems: 'center' }}>
+      <Text style={{ fontSize: 18 }}>{departmentName}</Text>
+      <Text style={{ fontSize: 32 }}>{count}</Text>
+      <View style={{ flexDirection: 'row', marginTop: 10 }}>
+        <Button title="-" onPress={handleDecrement} />
+        <View style={{ width: 20 }} />
+        <Button title="+" onPress={handleIncrement} />
+      </View>
+    </View>
+  );
 }
 
 export default DepartmentCounter;

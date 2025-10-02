@@ -1,5 +1,5 @@
 import { element, func, oneOfType } from "prop-types";
-import React, { Component } from "react";
+import { Component, React } from "react";
 import { isHoverEnabled } from "./HoverState";
 
 export default class Hoverable extends Component {
@@ -13,9 +13,7 @@ export default class Hoverable extends Component {
     }
 
     _handlemouseEnter(e){
-
         if(isHoverEnabled() && !this.state.isHovered){
-
             const{onHoverIn} = this.props;
             if(onHoverIn)onHoverIn();
             this.setState(state=> ({...state, isHovered: true}));
@@ -59,10 +57,10 @@ export default class Hoverable extends Component {
 
     
 }
-Hoverable.displayName = "Hoverable";
-
-Hoverable.prototype = {
+Hoverable.propTypes = {
     children: oneOfType([func, element]),
     onHoverIn: func,
-    onHoverout:func,
-}
+    onHoverout: func,
+};
+
+Hoverable.displayName = "Hoverable"; 

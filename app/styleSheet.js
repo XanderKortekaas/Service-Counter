@@ -1,5 +1,4 @@
 import { StyleSheet } from "react-native";
-
 import Colors from './color.js';
 
 const styles = StyleSheet.create({
@@ -64,6 +63,15 @@ const styles = StyleSheet.create({
   "logo": {
     "height": 100,
     "width": 100
+  },
+  "modal_content":{
+    "flex": 1,
+    "alignItems": "center"
+  },
+  "modal_text":{
+    "marginTop":-12.5,
+    "fontSize": 20,
+    "color": Colors.GRAY_200,
   },
 });
 

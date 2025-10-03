@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from "react-native";
+import Modal from 'react-native-modal';
 import styles from './styleSheet.js';
 
 function DepartmentCounter({departmentName})
 {
     const [count, setCount] = useState(0);
-    
+    const [isModalVisible, setModalVisible] = useState(false);
       
     function handleIncrement()
     {
@@ -22,6 +23,11 @@ function DepartmentCounter({departmentName})
     function handleReset()
     {
         setCount(0);
+    }
+
+
+    function toggleModal() {
+    setModalVisible(!isModalVisible);
     }
 
     return (
@@ -45,11 +51,21 @@ function DepartmentCounter({departmentName})
             </TouchableOpacity>
 
             <TouchableOpacity 
-            onPress ={handleReset}
+            onPress ={toggleModal}
             style = {[styles.button, styles.button_layout]}
             >
-                <Text style ={styles.button_text}>Reset</Text>
+            <Text style ={styles.button_text}>Reset</Text>
             </TouchableOpacity>
+            
+            <Modal isVisible = {isModalVisible} onBackdropPress={toggleModal}>
+                <View style= {styles.modal_content}>
+                    <Text style = {styles.modal_text}>Close pop up content</Text>
+                    <TouchableOpacity onPress={toggleModal}>
+                        <Text style={styles.button_text}>Close pop up</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
+
         </View>
     );
 }

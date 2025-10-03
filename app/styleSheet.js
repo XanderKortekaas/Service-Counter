@@ -65,17 +65,21 @@ const styles = StyleSheet.create({
     "width": 100
   },
   "modal_content":{
-    "flex":2,
     "alignItems": "center",
   },
   "modal_button": {
-    "backgroundColor": Colors.GRAY_100,
+    "backgroundColor": Colors.OLIVE_500,
     "borderRadius": 15,
-    "marginTop": -20,
+  },
+  "modal_button_text":{
+    "fontSize": 20,
+    "color": Colors.GRAY_800,
   },
   "modal_text":{
     "fontSize": 20,
     "color": Colors.GRAY_200,
+    "marginBottom": 20,
+    "marginTop": 20,
   },
 });
 

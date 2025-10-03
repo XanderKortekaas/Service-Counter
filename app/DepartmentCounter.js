@@ -60,8 +60,8 @@ function DepartmentCounter({departmentName})
             <Modal isVisible = {isModalVisible} onBackdropPress={toggleModal}>
                 <View style= {styles.modal_content}>
                     <Text style = {styles.modal_text}>Close pop up content</Text>
-                    <TouchableOpacity onPress={toggleModal}>
-                        <Text style={styles.button_text}>Close pop up</Text>
+                    <TouchableOpacity onPress={handleReset} style={styles.button}>
+                        <Text style={styles.button_text}>Reset Counter</Text>
                     </TouchableOpacity>
                 </View>
             </Modal>

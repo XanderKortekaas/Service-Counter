@@ -65,11 +65,15 @@ const styles = StyleSheet.create({
     "width": 100
   },
   "modal_content":{
-    "flex": 1,
-    "alignItems": "center"
+    "flex":2,
+    "alignItems": "center",
+  },
+  "modal_button": {
+    "backgroundColor": Colors.GRAY_100,
+    "borderRadius": 15,
+    "marginTop": -20,
   },
   "modal_text":{
-    "marginTop":-12.5,
     "fontSize": 20,
     "color": Colors.GRAY_200,
   },

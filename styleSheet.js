@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native";
-
-import Colors from './app/color.js';
+import Colors from './color.js';
 
 const styles = StyleSheet.create({
 
@@ -15,35 +14,30 @@ const styles = StyleSheet.create({
     "flexDirection": "column",
     "alignItems": "center",
     "fontSize": 48, 
-    "color": Colors.GREEN_200, 
+    "color": Colors.BLUE_700 , 
   },
-  
   "counter_container": {
     "flexDirection": "row",
     "alignItems": "center",
-    "width": 900,
+    "width": 1500,
     "height": 150,
     "columnGap": 40, 
-    "color": Colors.GREEN_200, 
   },
   "counter_viewer": {
-    "marginTop": 40,
-    "marginBottom": 40,
+    "marginTop": 80,
+    "marginBottom": 80,
   },
   "counter_section": {
-    "marginBottom": 40
+    "marginBottom": 60
   },
   "counter_section_h1": {
     "flex": 1,
-    "color": Colors.GREEN_500, 
-    "fontSize": 48,
-    "alignContent": "center"
+    "color": Colors.GREEN_200, 
+    "fontSize": 40,
   },
-
   "button": {
-    "width": 100,
-    "height": 100,
-    "backgroundColor": Colors.BLUE_700
+    "backgroundColor": Colors.GRAY_300,
+    "borderRadius": 15,
   },
   "button_layout": {
     "justifyContent": "center",
@@ -54,13 +48,14 @@ const styles = StyleSheet.create({
   "button_svg":{
   },
   "button_text": {
-    
-    "fontSize": 50,
+    "marginTop":-12.5,
+    "fontSize": 75,
     "color": Colors.GRAY_900,
   },
   "App": {
-   
-  },"App-container": {
+    "flex": 0.5,
+  },
+  "App-container": {
     "flex": 1,
     "flexDirection": "column",
     "alignItems": "center"
@@ -68,6 +63,23 @@ const styles = StyleSheet.create({
   "logo": {
     "height": 100,
     "width": 100
+  },
+  "modal_content":{
+    "alignItems": "center",
+  },
+  "modal_button": {
+    "backgroundColor": Colors.OLIVE_500,
+    "borderRadius": 15,
+  },
+  "modal_button_text":{
+    "fontSize": 20,
+    "color": Colors.GRAY_800,
+  },
+  "modal_text":{
+    "fontSize": 20,
+    "color": Colors.GRAY_200,
+    "marginBottom": 20,
+    "marginTop": 20,
   },
 });
 

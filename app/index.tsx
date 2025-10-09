@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import DepartmentCounter from './DepartmentCounter';
 import styles from './styleSheet';
+
 export default function Index() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20 }}>

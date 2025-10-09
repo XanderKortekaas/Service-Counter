@@ -66,7 +66,5 @@ function DepartmentCounter({ departmentName }) {
     </View>
   );
 }
-console.log(SQLite);
-
 
 export default DepartmentCounter;

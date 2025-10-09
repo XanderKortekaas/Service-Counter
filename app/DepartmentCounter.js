@@ -5,6 +5,7 @@ import Modal from 'react-native-modal';
 import { createTables, getDepartment, updateDepartment } from './database';
 import styles from './styleSheet';
 
+
 function DepartmentCounter({ departmentName }) {
   const [count, setCount] = useState(0);
   const [isModalVisible, setModalVisible] = useState(false);

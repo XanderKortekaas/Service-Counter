@@ -1,19 +1,18 @@
-import { Platform } from 'react-native';
 
-const SQLite = Platform.OS !== 'web' ? require('expo-sqlite') : null; 
+import * as SQLite from 'expo-sqlite';
 
 let db = null; 
 
 if (SQLite) {
   try {
-    db = SQLite.openDatabase('myDatabase.db'); 
+    db = SQLite.openDatabaseSync('myDatabase.db'); 
   } catch (error) {
-    console.error("Fout bij het openen van de database:", error);
+    console.error("error while opening database:", error);
   }
 } else {    
   db = {
         transaction: (callback) => { 
-          console.warn("Database functies zijn uitgeschakeld."); 
+          console.warn("Database functions are disabled."); 
          callback({ executeSql: () => {} }); 
       }
   };

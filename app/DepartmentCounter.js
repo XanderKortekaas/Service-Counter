@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Button, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { createTables, getDepartment, updateDepartment } from './database';
 import styles from './styleSheet';
@@ -29,41 +29,67 @@ function DepartmentCounter({ departmentName }) {
     }
   }
 
-  function toggleModal() {
-    setModalVisible(!isModalVisible);
-  }
-
   function handleReset() {
     setCount(0);
     updateDepartment(departmentName, 0);
     toggleModal();
   }
 
-  return (
-    <View style={{ margin: 10, alignItems: 'center' }}>
-      <Text style={{ fontSize: 18 }}>{departmentName}</Text>
-      <Text style={{ fontSize: 32 }}>{count}</Text>
-      <View style={{ flexDirection: 'row', marginTop: 10 }}>
-        <Button title="-" onPress={handleDecrement} />
-        <View style={{ width: 20 }} />
-        <Button title="+" onPress={handleIncrement} />
-      </View>
-      <TouchableOpacity onPress={toggleModal} style={[styles.button, styles.button_layout]}>
-        <Text style={styles.button_text}>Reset</Text>
-      </TouchableOpacity>
+  function toggleModal() {
+    setModalVisible(!isModalVisible);
+  }
 
+  return (
+   <View style={styles.counter_container}>
+      <Text style={styles.App_text}>{[departmentName,": " , count]}</Text>
+      
+      <View style = {styles.button_group}>
+        {/*Decrease */}
+
+        <TouchableOpacity 
+          onPress={handleDecrement}
+          style={[styles.button, styles.button_layout]} 
+        >
+        <Text style={styles.button_text}>-</Text>
+        </TouchableOpacity>
+        
+        {/* Increase */}
+        
+        <TouchableOpacity 
+         onPress={handleIncrement}
+          style={[styles.button, styles.button_layout]}
+        >
+          <Text style={styles.button_text}>+</Text>
+        </TouchableOpacity>
+        
+        {/* Reset */}
+
+        <TouchableOpacity 
+          onPress={toggleModal}
+          style={[styles.button, styles.button_layout]}
+        >
+        <Text style={styles.button_text}>reset</Text> 
+        </TouchableOpacity>
+      </View>
+        
       <Modal isVisible={isModalVisible} onBackdropPress={toggleModal}>
         <View style={styles.modal_content}>
           <Text style={styles.modal_text}>Do You Want to Reset the Count?</Text>
-          <TouchableOpacity onPress={handleReset} style={styles.modal_button}>
-            <Text style={styles.button_text}>Reset Counter</Text>
+
+          <TouchableOpacity onPress={toggleModal}> 
+            
+            <TouchableOpacity onPress={handleReset} style={[styles.modal_button, styles.button]}>
+            
+            <Text style={styles.modal_button_text}>Reset Counter</Text>
+
+            </TouchableOpacity>
+
           </TouchableOpacity>
-          <TouchableOpacity onPress={toggleModal}>
-            <Text style={styles.modal_text}>Close pop up content</Text>
-          </TouchableOpacity>
+          
+          <Text style={styles.modal_text}>Click any where to close pop up content</Text>
         </View>
-      </Modal>
-    </View>
+    </Modal>
+  </View>
   );
 }
 

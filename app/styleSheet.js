@@ -39,6 +39,12 @@ const styles = StyleSheet.create({
     "color": Colors.GREEN_200, 
     "fontSize": 40,
   },
+  "department_name":{
+
+  },
+  "department_count":{
+
+  },
   "button_group":{
     "flexDirection": "row",
   }, 

@@ -82,6 +82,6 @@ export const getAllDepartments = async () => {
     return results;
   } catch (error) {
     console.error("Error getting all departments:", error);
-    return [];
-  }
+    return[];
+  }
 };

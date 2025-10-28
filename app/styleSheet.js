@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 import Colors from './color';
 
 const styles = StyleSheet.create({
@@ -23,16 +23,13 @@ const styles = StyleSheet.create({
   },
   "counter_container": {
     "alignItems": "center",
-    "width": 1280,
-    "height": 600,
+    "width": 600,
+    "height": 1280,
   },
   "counter_viewer": {
     "flexDirection": "Row",
-    "marginTop": 80,
-    "marginBottom": 80,
   },
   "counter_section": {
-    "marginBottom": 60
   },
   "counter_section_h1": {
     "flex": 1,

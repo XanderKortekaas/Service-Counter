@@ -1,5 +1,7 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import Colors from './color';
+
+const {width, height} = Dimensions.get('window')
 
 const styles = StyleSheet.create({
 
@@ -22,12 +24,18 @@ const styles = StyleSheet.create({
     "marginBottom": 25,
   },
   "counter_container": {
+    "flex": 1 ,
     "alignItems": "center",
-    "width": 600,
-    "height": 1280,
+    "height": '100%',
+    "paddingHorizontal": 20,
   },
   "counter_viewer": {
     "flexDirection": "Row",
+    "flexWrap": "wrap",
+    "justifyContent": "center",
+    "marginTop": 40,
+    "marginBottom": 20,
+    "gap": 20, 
   },
   "counter_section": {
   },
@@ -61,8 +69,9 @@ const styles = StyleSheet.create({
     "fontSize": 25,
     "color": Colors.GRAY_900,
   },
-  "App": {
-    "flex": 1,
+   "button_titel_text": {
+    "fontSize": 25,
+    "color": Colors.GREEN_500,
   },
   "App-container": {
     "flex": 1,

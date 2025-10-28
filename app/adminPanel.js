@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import color from "./color";
 import { createTables, getAllDepartments, updateDepartment } from './database';
 import styles from "./styleSheet";
@@ -57,12 +58,12 @@ const DepartmentListScreen = () => {
     }
     
     return(
-        <SafeAreaView style={styles.counter_container}>
+        <SafeAreaView style={[styles.counter_container, styles.style]} edges={['top', 'left', 'right']}>
             <TouchableOpacity 
                 onPress={() => navigation.goBack()} 
                 style={styles.button}
             >
-                <Text style={styles.button_text}>← Back to Home</Text>
+                <Text style={styles.button_titel_text}>← Back to Home</Text>
             </TouchableOpacity>
             
             <Text style={styles.App_header}>Department Overview</Text>
@@ -76,6 +77,7 @@ const DepartmentListScreen = () => {
                 </View>
             ) : (
                 <FlatList
+                    style = {styles.App_text}
                     data={departments}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.name}

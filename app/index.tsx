@@ -7,14 +7,14 @@ import styles from './styleSheet';
 export default function Index() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20 }}>
-      <View style={styles.App as ViewStyle}>
+      <View style={[styles.style as ViewStyle]}>
         <Text style={styles.App_header as TextStyle}>
           Welcome to the Chistelijke Hogeschool Ede
         </Text>
         
         <Link href="/adminPanel" asChild>
           <TouchableOpacity style={[styles.button_layout as ViewStyle, { marginTop: 20 }]}>
-            <Text style={styles.button_text as TextStyle}>Admin Panel</Text>
+            <Text style={styles.button_titel_text as TextStyle}>Admin Panel</Text>
           </TouchableOpacity>
         </Link>
       </View>

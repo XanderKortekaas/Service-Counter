@@ -42,50 +42,61 @@ const DepartmentListScreen = () => {
     }
     
     const renderItem = ({item}) => (
-        <View style={styles.item_container}>
-            <Text style={styles.department_name}>{item.name}</Text>
-            <Text style={styles.department_count}>{item.count}</Text>
+        <View style={styles.item_section}>
+            <Text style={styles.department_name}>
+                {item.name}:
+            </Text>
+            <Text style={styles.department_count}>
+                {item.count}
+            </Text>
         </View>
     );
     
     if(loading){
         return(
             <View style={styles.center}>
-                <ActivityIndicator size={"large"} color={color.GREEN_200}></ActivityIndicator>
-                <Text>Database is loading...</Text>
+                <ActivityIndicator size={"large"} color={color.GREEN_200} />
+                <Text style={styles.App_text}>Database is loading...</Text>
             </View>
         );
     }
     
     return(
-        <SafeAreaView style={[styles.counter_container, styles.style]} edges={['top', 'left', 'right']}>
-            <TouchableOpacity 
-                onPress={() => navigation.goBack()} 
-                style={styles.button}
-            >
-                <Text style={styles.button_titel_text}>← Back to Home</Text>
-            </TouchableOpacity>
-            
+        <SafeAreaView style={[styles.counter_container, styles.style]}>
             <Text style={styles.App_header}>Department Overview</Text>
             
+            <TouchableOpacity 
+                onPress={() => navigation.goBack()} 
+                style={[styles.button, styles.button_layout]}
+            >
+                <Text style={styles.button_text}>Back to Home</Text>
+            </TouchableOpacity>
+            
             {departments.length === 0 ? (
-                <View style={styles.center}>
-                    <Text style={styles.empty_Text}>No departments Found</Text>
-                    <TouchableOpacity onPress={handleRefresh} style={styles.button}>
+                <View style={styles.counter_section}>
+                    <Text style={styles.App_text}>No departments Found</Text>
+                    <TouchableOpacity 
+                        onPress={handleRefresh} 
+                        style={styles.button_layout}
+                    >
                         <Text style={styles.button_text}>Refresh</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
                 <FlatList
-                    style = {styles.App_text}
+                    style={{ flex: 1, width: '100%' }}
+                    contentContainerStyle={{ padding: 20 }}
                     data={departments}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.name}
                 />
             )}
             
-            <TouchableOpacity onPress={handleRefresh} style={styles.bottomButton}>
-                <Text style={styles.buttonText}>Refresh Data</Text>
+            <TouchableOpacity 
+                onPress={handleRefresh} 
+                style={[styles.button_layout, { marginTop: 20 }]}
+            >
+                <Text style={styles.button_text}>Refresh Data</Text>
             </TouchableOpacity>
         </SafeAreaView>
     );

@@ -11,9 +11,10 @@ const styles = StyleSheet.create({
     "justifyContent": "center", 
     "alignItems": "center" 
   },
+  "App":{
+
+  },
   "App_header": {
-    "flex": 1, 
-    "flexDirection": "column",
     "alignItems": "center",
     "fontSize": 48, 
     "color": Colors.BLUE_700 , 
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     "flex": 1 ,
     "alignItems": "center",
     "height": '100%',
-    "paddingHorizontal": 20,
+    //"paddingHorizontal": 50,
   },
   "counter_viewer": {
     "flexDirection": "Row",
@@ -38,17 +39,29 @@ const styles = StyleSheet.create({
     "gap": 20, 
   },
   "counter_section": {
+    "flexDirection":'row',
+    "alignItems": 'center',
+    "justifyContent":'space-between',
   },
-  "counter_section_h1": {
+  "counter_section_h1":{
     "flex": 1,
     "color": Colors.GREEN_200, 
     "fontSize": 40,
   },
-  "department_name":{
+  "department_section":{
+    "flexDirection":'row',
+    "alignItems": 'center',
+    "justifyContent":'space-between',
+    "padding": 20,
+  },
 
+  "department_name":{
+    "color": Colors.GREEN_500,
+    "fontSize": 25,
   },
   "department_count":{
-
+    "color": Colors.GREEN_200,
+    "fontSize": 25,
   },
   "button_group":{
     "flexDirection": "row",
@@ -61,9 +74,9 @@ const styles = StyleSheet.create({
   },
   "button_layout": {
     "backgroundColor": Colors.GREEN_500,
-    "borderRadius": 20,
+    "borderRadius": 5,
     "minWidth": 75,
-    "maxWidth": 100,  
+    "maxWidth": 150,  
   },
   "button_text": {
     "fontSize": 25,
@@ -87,7 +100,7 @@ const styles = StyleSheet.create({
   },
   "modal_button": {
     "backgroundColor": Colors.OLIVE_500,
-    "borderRadius": 15,
+    "borderRadius": 5,
     "marginBottom": 50,
     "marginTop": 50,
   },

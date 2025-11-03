@@ -41,7 +41,7 @@ function DepartmentCounter({ departmentName }) {
 
   return (
    <View style={[styles.counter_container, styles.style]}>
-      <Text style={styles.App_text}>{[departmentName,": " , count]}</Text>
+      <Text style={styles.app_text}>{[departmentName,": " , count]}</Text>
       
       <View style = {styles.button_group}>
         {/*Decrease */}

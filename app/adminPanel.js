@@ -43,11 +43,8 @@ const DepartmentListScreen = () => {
     
     const renderItem = ({item}) => (
         <View style={styles.item_section}>
-            <Text style={styles.department_name}>
-                {item.name}:
-            </Text>
-            <Text style={styles.department_count}>
-                {item.count}
+            <Text style={styles.department}>
+                {item.name}:   {item.count}
             </Text>
         </View>
     );
@@ -56,14 +53,14 @@ const DepartmentListScreen = () => {
         return(
             <View style={styles.center}>
                 <ActivityIndicator size={"large"} color={color.GREEN_200} />
-                <Text style={styles.App_text}>Database is loading...</Text>
+                <Text style={styles.app_text}>Database is loading...</Text>
             </View>
         );
     }
     
     return(
         <SafeAreaView style={[styles.counter_container, styles.style]}>
-            <Text style={styles.App_header}>Department Overview</Text>
+            <Text style={styles.app_header}>Department Overview</Text>
             
             <TouchableOpacity 
                 onPress={() => navigation.goBack()} 
@@ -74,7 +71,7 @@ const DepartmentListScreen = () => {
             
             {departments.length === 0 ? (
                 <View style={styles.counter_section}>
-                    <Text style={styles.App_text}>No departments Found</Text>
+                    <Text style={styles.app_text}>No departments Found</Text>
                     <TouchableOpacity 
                         onPress={handleRefresh} 
                         style={styles.button_layout}
@@ -94,7 +91,7 @@ const DepartmentListScreen = () => {
             
             <TouchableOpacity 
                 onPress={handleRefresh} 
-                style={[styles.button_layout, { marginTop: 20 }]}
+                style={[styles.button_layout, { marginTop: 20, marginBottom: 60 }]}
             >
                 <Text style={styles.button_text}>Refresh Data</Text>
             </TouchableOpacity>

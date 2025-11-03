@@ -11,24 +11,27 @@ const styles = StyleSheet.create({
     "justifyContent": "center", 
     "alignItems": "center" 
   },
-  "App":{
-
+  "app":{
   },
-  "App_header": {
+  "app_header": {
     "alignItems": "center",
     "fontSize": 48, 
     "color": Colors.BLUE_700 , 
   },
-  "App_text":{
+  "app_text":{
     "fontSize":24,
     "color": Colors.OLIVE_500, 
     "marginBottom": 25,
+  },
+  "app-container": {
+    "flex": 1,
+    "flexDirection": "column",
+    "alignItems": "center"
   },
   "counter_container": {
     "flex": 1 ,
     "alignItems": "center",
     "height": '100%',
-    //"paddingHorizontal": 50,
   },
   "counter_viewer": {
     "flexDirection": "Row",
@@ -54,14 +57,9 @@ const styles = StyleSheet.create({
     "justifyContent":'space-between',
     "padding": 20,
   },
-
-  "department_name":{
-    "color": Colors.GREEN_500,
-    "fontSize": 25,
-  },
-  "department_count":{
-    "color": Colors.GREEN_200,
-    "fontSize": 25,
+  "department":{
+    "color": Colors.BLUE_700,
+    "fontSize": 36,
   },
   "button_group":{
     "flexDirection": "row",
@@ -85,11 +83,6 @@ const styles = StyleSheet.create({
    "button_titel_text": {
     "fontSize": 25,
     "color": Colors.GREEN_500,
-  },
-  "App-container": {
-    "flex": 1,
-    "flexDirection": "column",
-    "alignItems": "center"
   },
   "logo": {
     "height": 100,

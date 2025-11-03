@@ -8,8 +8,8 @@ export default function Index() {
   return (
     <View style={[styles.style as ViewStyle, { flex: 1 }]}>
       <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <View style={styles.App_header as ViewStyle}>
-          <Text style={styles.App_header as TextStyle}>
+        <View style={styles.app_header as ViewStyle}>
+          <Text style={styles.app_header as TextStyle}>
             Welcome to the Chistelijke Hogeschool Ede
           </Text>
             <TouchableOpacity style={[styles.modal_button as ViewStyle]}>

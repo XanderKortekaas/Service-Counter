@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import color from "./_color";
 import { getAllDepartments } from './_database';
@@ -13,7 +13,7 @@ const DepartmentListScreen = ()=> {
         setLoading(true);
         try {
             const data = await getAllDepartments();
-            setDepartmentsdata(data);
+            setDepartments(data);
         } catch (error){
             console.error("something went wrong while loading all departments: ", error);
             Alert.alert("Fout", "Kon de afdelingen niet laden vanuit de database.");
@@ -33,7 +33,7 @@ const DepartmentListScreen = ()=> {
     const renderItem = ({item}) => (
         <View style={styles.item_section}>
             <Text style={styles.department}>
-                {item.name}:   {item.count}
+                {item.name}:  {item.count}
             </Text>
         </View>
     );
@@ -57,7 +57,7 @@ const DepartmentListScreen = ()=> {
                     <Text style = {styles.button_text}>Refresh</Text>
                 </TouchableOpacity>
             </View>):(
-                <Flatlist
+                <FlatList
                 data = {departments}
                 renderItem = {renderItem}
                 keyExtractor = {(item) => item.name}

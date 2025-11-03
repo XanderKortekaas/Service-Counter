@@ -1,6 +1,7 @@
 import { element, func, oneOfType } from "prop-types";
 import { Component, React } from "react";
-import { isHoverEnabled } from "./HoverState";
+// FIX: Aangepast van "./HoverState" naar "./_HoverState" om de router-waarschuwing op te lossen.
+import { isHoverEnabled } from "./_HoverState";
 
 export default class Hoverable extends Component {
     constructor(props){

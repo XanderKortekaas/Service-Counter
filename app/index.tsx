@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import DepartmentCounter from './DepartmentCounter';
-import styles from './styleSheet';
+import styles from './_styleSheet';
 
 export default function Index() {
   return (

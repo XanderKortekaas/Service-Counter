@@ -1,6 +1,8 @@
 import { StyleSheet } from "react-native";
 import Colors from './_color';
 
+const {width, height} = Dimensions.get('window')
+
 const styles = StyleSheet.create({
 
   "style": {
@@ -9,41 +11,55 @@ const styles = StyleSheet.create({
     "justifyContent": "center", 
     "alignItems": "center" 
   },
-  "App_header": {
-    "flex": 1, 
-    "flexDirection": "column",
+  "app":{
+  },
+  "app_header": {
     "alignItems": "center",
     "fontSize": 48, 
     "color": Colors.BLUE_700 , 
   },
-  "App_text":{
+  "app_text":{
     "fontSize":24,
     "color": Colors.OLIVE_500, 
     "marginBottom": 25,
   },
+  "app-container": {
+    "flex": 1,
+    "flexDirection": "column",
+    "alignItems": "center"
+  },
   "counter_container": {
+    "flex": 1 ,
     "alignItems": "center",
-    "width": 1280,
-    "height": 600,
+    "height": '100%',
   },
   "counter_viewer": {
     "flexDirection": "Row",
-    "marginTop": 80,
-    "marginBottom": 80,
+    "flexWrap": "wrap",
+    "justifyContent": "center",
+    "marginTop": 40,
+    "marginBottom": 20,
+    "gap": 20, 
   },
   "counter_section": {
-    "marginBottom": 60
+    "flexDirection":'row',
+    "alignItems": 'center',
+    "justifyContent":'space-between',
   },
-  "counter_section_h1": {
+  "counter_section_h1":{
     "flex": 1,
     "color": Colors.GREEN_200, 
     "fontSize": 40,
   },
-  "department_name":{
-
+  "department_section":{
+    "flexDirection":'row',
+    "alignItems": 'center',
+    "justifyContent":'space-between',
+    "padding": 20,
   },
-  "department_count":{
-
+  "department":{
+    "color": Colors.BLUE_700,
+    "fontSize": 36,
   },
   "button_group":{
     "flexDirection": "row",
@@ -56,21 +72,17 @@ const styles = StyleSheet.create({
   },
   "button_layout": {
     "backgroundColor": Colors.GREEN_500,
-    "borderRadius": 20,
+    "borderRadius": 5,
     "minWidth": 75,
-    "maxWidth": 100,  
+    "maxWidth": 150,  
   },
   "button_text": {
     "fontSize": 25,
     "color": Colors.GRAY_900,
   },
-  "App": {
-    "flex": 1,
-  },
-  "App-container": {
-    "flex": 1,
-    "flexDirection": "column",
-    "alignItems": "center"
+   "button_titel_text": {
+    "fontSize": 25,
+    "color": Colors.GREEN_500,
   },
   "logo": {
     "height": 100,
@@ -81,7 +93,7 @@ const styles = StyleSheet.create({
   },
   "modal_button": {
     "backgroundColor": Colors.OLIVE_500,
-    "borderRadius": 15,
+    "borderRadius": 5,
     "marginBottom": 50,
     "marginTop": 50,
   },

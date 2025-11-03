@@ -1,19 +1,14 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Flatlist, SafeAreaViewBase, Text, TouchableOpacity, View } from "react-native";
-import color from "./color";
-import { createTables, getAllDepartments, updateDepartment } from './database';
-import styles from "./styleSheet";
-const initializeData = async() => {
-    await createTables();
-    await updateDepartment();
-}
+import { ActivityIndicator, Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import color from "./_color";
+import { getAllDepartments } from './_database';
+import styles from "./_styleSheet";
 
 const DepartmentListScreen = ()=> {
     const[departments, setDepartments] = useState([]);
     const[loading, setLoading] = useState(true);
 
-    // funtion to get all the data out of the database
     const loadDepartments = useCallback(async() => {
         setLoading(true);
         try {
@@ -21,21 +16,15 @@ const DepartmentListScreen = ()=> {
             setDepartmentsdata(data);
         } catch (error){
             console.error("something went wrong while loading all departments: ", error);
-            // Gebruik van Alert.alert is OK, maar voor de zekerheid de melding duidelijker maken
             Alert.alert("Fout", "Kon de afdelingen niet laden vanuit de database.");
         } finally{
             setLoading(false);
         }
     }, []);
-    // function to initialise and load all the data on start up 
+    
     useEffect(() => {
-        const initAndLoad = async () => {
-            await initializeData();
-            loadDepartments();
-        };
-
-        initAndLoad();
-    }, [loadDepartments]);
+        loadDepartments();
+    }, [loadDepartments]); 
 
     const handleRefresh = () => {
         loadDepartments();
@@ -59,8 +48,8 @@ const DepartmentListScreen = ()=> {
     }
     
     return(
-        <SafeAreaViewBase style={styles.counter_container}>
-            <Text style={styles.App_header}>Department Overview</Text>
+        <SafeAreaView style={styles.counter_container}>
+            <Text style={styles.App_header}>Afdelingen Overzicht (Admin)</Text>
 
             {departments.length ===0 ?(<View style = {styles.center}>
                 <Text style={styles.empty_Text}>No departments Found</Text>
@@ -72,8 +61,11 @@ const DepartmentListScreen = ()=> {
                 data = {departments}
                 renderItem = {renderItem}
                 keyExtractor = {(item) => item.name}
+                onRefresh={handleRefresh}
+                refreshing={loading} 
                 />
             )}
+            
             <TouchableOpacity onPress={handleRefresh} style={styles.bottomButton}>
                 <Text style={styles.buttonText}>Refresh Data</Text>
             </TouchableOpacity>

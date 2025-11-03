@@ -1,6 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import color from "./_color";
 import { getAllDepartments } from './_database';
 import styles from "./_styleSheet";

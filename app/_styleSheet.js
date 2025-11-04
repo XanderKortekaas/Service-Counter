@@ -58,6 +58,10 @@ const styles = StyleSheet.create({
     "justifyContent": 'space-between',
     "padding": 20,
   },
+  "department_count": {
+    "color": Colors.OLIVE_500,
+    "fontSize": 36,
+  },
   "department": {
     "color": Colors.BLUE_700,
     "fontSize": 36,
@@ -108,6 +112,12 @@ const styles = StyleSheet.create({
     "fontSize": 20,
     "color": Colors.GRAY_200,
   },
+  "center": {
+    "flex": 1,
+    "justifyContent": "center",
+    "alignItems": "center",
+    "padding": 20,
+},
 });
 
 export default styles;

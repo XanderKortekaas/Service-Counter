@@ -12,6 +12,8 @@ const Colors ={
   GREEN_200 : "#12dba2",
   OLIVE_500 : "#e3ffa8",
   BLUE_700 : "#61dafb",
+  VIOLET_500: "#A145FF",
+  Red_900: '#ff4444',
 }
 
 export default Colors

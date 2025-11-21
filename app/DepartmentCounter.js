@@ -1,45 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
-import { getDepartment, updateDepartment } from './_database';
+import { updateDepartmentCount } from './_database';
 import styles from './_styleSheet';
 
-function DepartmentCounter({ departmentName }) {
-  const [count, setCount] = useState(0);
+function DepartmentCounter({ departmentName, initialCount, onUpdate }) {
+  
+  const [count, setCount] = useState(initialCount || 0);
   const [isModalVisible, setModalVisible] = useState(false);
-
+  
   useEffect(() => {
-    const loadSavedCount = async () => {
-      try {
-        const savedCount = await getDepartment(departmentName);
-        setCount(savedCount);
-        console.log(`[${departmentName}] Opgeslagen count geladen: ${savedCount}`);
-      } catch (error) {
-        console.error(`Fout bij het laden van department ${departmentName}:`, error);
-        setCount(0); 
-      }
-    };
-    
-    loadSavedCount();
-  }, [departmentName]);
+    setCount(initialCount);
+  }, [initialCount]);
 
-  function handleIncrement() {
+
+  async function handleIncrement() {
     const newCount = count + 1;
     setCount(newCount);
-    updateDepartment(departmentName, newCount); 
+    await updateDepartmentCount(departmentName, newCount); 
   }
 
-  function handleDecrement() {
+  async function handleDecrement() {
     if (count > 0) {
       const newCount = count - 1;
       setCount(newCount);
-      updateDepartment(departmentName, newCount);
+      await updateDepartmentCount(departmentName, newCount);
+      if (onUpdate) onUpdate();
     }
   }
 
-  function handleReset() {
+  async function handleReset() {
     setCount(0);
-    updateDepartment(departmentName, 0); 
+    await updateDepartmentCount(departmentName, 0); 
     toggleModal();
   }
 
@@ -49,7 +41,7 @@ function DepartmentCounter({ departmentName }) {
 
   return (
    <View style={[styles.counter_container, styles.style]}>
-      <Text style={styles.app_text}>{[departmentName,": " , count]}</Text>
+      <Text style={styles.department_name_text}>{departmentName}: {count}</Text>
       
       <View style = {styles.button_group}>
         <TouchableOpacity 
@@ -82,11 +74,13 @@ function DepartmentCounter({ departmentName }) {
             <Text style={styles.modal_button_text}>Reset Teller</Text>
           </TouchableOpacity>
 
-          <Text style={styles.modal_text}>Klik ergens om dit pop-upvenster te sluiten</Text>
+          <Text style={[styles.modal_text, { marginTop: 15, fontSize: 12 }]}>
+            Klik op de achtergrond om te sluiten.
+          </Text>
         </View>
       </Modal>
     </View>
   );
 }
 
-export default DepartmentCounter;
+export default React.memo(DepartmentCounter);

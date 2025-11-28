@@ -76,7 +76,9 @@ const styles = StyleSheet.create({
         "color": Colors.BLUE_700,
         "fontSize": 36,
     },
-
+    "scrollview_style":{
+        "flex": 1 
+    },  
     // --- Buttons & Tellers ---
     "button_group": {
         "flexDirection": "row",
@@ -97,6 +99,7 @@ const styles = StyleSheet.create({
         "maxWidth": 150,
         "borderColor": Colors.GREEN_500,
         "borderWidth": 1,
+        "alignItems": "center",
     },
     "button_text": {
         "fontSize": 25,
@@ -126,23 +129,32 @@ const styles = StyleSheet.create({
         'shadowRadius': 3.84,
         'elevation': 5,
     },
+    "modal_button_layout":{
+        "flexDirection": 'row',
+        "minWidth": 75,
+        "maxWidth": 150,
+        "gap": 10,
+    },
     "modal_button": {
-        "backgroundColor": Colors.BLUE_700,
-        "borderColor": Colors.GRAY_200,
+        "backgroundColor": Colors.GRAY_800,
+        "borderColor":Colors.VIOLET_500,
         "borderWidth": 1,
         "borderRadius": 5,
         "marginBottom": 50,
         "marginTop": 50,
         "paddingHorizontal": 20,
         "paddingVertical": 10,
+        "alignItems": 'center',
     },
     "modal_button_text": {
         "fontSize": 20,
-        "color": Colors.GRAY_800,
+        "color": Colors.VIOLET_500,
+        "alignSelf": 'center',
     },
     "modal_text": {
         "fontSize": 20,
         "color": Colors.GRAY_200,
+        "alignSelf": 'center',
     },
     
     // --- Specifieke Statistische & Input Stijlen ---

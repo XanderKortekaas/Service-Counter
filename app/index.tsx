@@ -86,7 +86,8 @@ export default function Index() {
 
     return (
         <View style={[styles.style, { flex: 1 }]}>
-            <ScrollView 
+            <ScrollView
+                style={[ styles.scrollview_style]}
                 contentContainerStyle={{ padding: 20 }}
                 refreshControl={
                     <RefreshControl
@@ -112,11 +113,12 @@ export default function Index() {
                         </Text>
                     </View>
                 
-                    <Link href="/adminPanel" asChild>
-                        <TouchableOpacity style={[styles.modal_button, { marginTop: 20 }]}>
+                    
+                    <TouchableOpacity style={[styles.modal_button, { marginTop: 20 }]}>
+                        <Link href="/adminPanel" asChild>
                             <Text style={styles.customer_text}>Admin Panel</Text>
-                        </TouchableOpacity>
-                    </Link>
+                        </Link>
+                    </TouchableOpacity>
                 </View>
             
                 {/* Departments */}

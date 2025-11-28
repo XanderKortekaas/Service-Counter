@@ -209,16 +209,16 @@ const DepartmentListScreen = () => {
             {/* Controls */}
             <View style={{ gap: 10 }}>
                 {/* Count buttons */}
-                <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={[styles.modal_button_layout]}>
                     <TouchableOpacity
-                        style={[styles.button_layout, { borderColor: color.OLIVE_500, minWidth: 50 }]}
+                        style={[styles.button_layout, { borderColor: color.OLIVE_500}]}
                         onPress={() => handleDecrementCount(item.name, item.count)}
                     >
                         <Text style={styles.button_text}>-</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.button_layout, { borderColor: color.VIOLET_500, minWidth: 50 }]}
+                        style={[styles.button_layout, { borderColor: color.VIOLET_500}]}
                         onPress={() => handleIncrementCount(item.name, item.count)}
                     >
                         <Text style={styles.button_text}>+</Text>
@@ -226,16 +226,16 @@ const DepartmentListScreen = () => {
                 </View>
 
                 {/* Action buttons */}
-                <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={[styles.modal_button_layout]}>
                     <TouchableOpacity
-                        style={[styles.button_layout, { borderColor: color.BLUE_700, flex: 0.5 }]}
+                        style={[styles.button_layout, { borderColor: color.BLUE_700}]}
                         onPress={() => handleResetCount(item.name)}
                     >
                         <Text style={[styles.button_text, { fontSize: 14 }]}>Reset</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.button_layout, { borderColor: '#ff4444', flex: 0.5}]}
+                        style={[styles.button_layout, { borderColor: '#ff4444'}]}
                         onPress={() => handleDeleteDepartment(item.name)}
                     >
                         <Text style={[styles.button_text, { fontSize: 14 }]}>Verwijder</Text>

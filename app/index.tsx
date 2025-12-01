@@ -1,18 +1,41 @@
 import { Link } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import DepartmentCounter from './DepartmentCounter';
 import styles from './_styleSheet';
+// Importeer de database functies
+import { createTables, syncAndCleanup } from './database';
 
 export default function Index() {
+
+  // Zodra de app opstart:
+  useEffect(() => {
+    const startUp = async () => {
+      console.log("🚀 App start op...");
+      
+      try {
+        // 1. Maak tabellen als ze niet bestaan
+        await createTables();
+        
+        // 2. Sync met Supabase (haal nieuw binnen, gooi oud weg)
+        await syncAndCleanup();
+      } catch (error) {
+        // Vang fouten op zodat de app niet crasht
+        console.error("⚠️ Oeps, er ging iets mis bij het opstarten:", error);
+      }
+    };
+
+    startUp();
+  }, []); 
+
   return (
     <View style={[styles.style, { flex: 1 }]}>
       <ScrollView contentContainerStyle={{ padding: 20 }}>
-        {/* Vroeger: styles.app_header. Nu: styles.app_header_container */}
+        
+        {/* Header Sectie */}
         <View style={styles.app_header_container}>
-          {/* Vroeger: styles.app_header. Nu: styles.app_header_text */}
           <Text style={styles.app_header_text}>
-            Welcome to the Chistelijke Hogeschool Ede
+            Welcome to the Christelijke Hogeschool Ede
           </Text>
           
           <Link href="/adminPanel" asChild>
@@ -22,11 +45,13 @@ export default function Index() {
           </Link>
         </View>
 
+        {/* Department Lijst */}
         <View style={styles.counter_container}>
           <DepartmentCounter departmentName="IT" />
           <DepartmentCounter departmentName="Finance" />
           <DepartmentCounter departmentName="Internal Affairs" />
         </View>
+
       </ScrollView>
     </View>
   );

@@ -1,92 +1,103 @@
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import Modal from 'react-native-modal';
-import { getDepartment, updateDepartment } from './_database';
-import styles from './_styleSheet';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+// We importeren jouw database functies
+import { getDepartment, updateDepartment } from './database';
 
-function DepartmentCounter({ departmentName }) {
+export default function DepartmentCounter({ departmentName }) {
   const [count, setCount] = useState(0);
-  const [isModalVisible, setModalVisible] = useState(false);
 
+  // 1. Bij het laden van de component: Haal de huidige stand uit SQLite
   useEffect(() => {
-    const loadSavedCount = async () => {
+    const loadData = async () => {
       try {
+        console.log(`🔍 Laden voor ${departmentName}...`);
         const savedCount = await getDepartment(departmentName);
-        setCount(savedCount);
-        console.log(`[${departmentName}] Opgeslagen count geladen: ${savedCount}`);
+        
+        // Zorg dat we altijd een getal hebben, ook als de DB null teruggeeft
+        setCount(savedCount || 0);
       } catch (error) {
-        console.error(`Fout bij het laden van department ${departmentName}:`, error);
-        setCount(0); 
+        console.error(`⚠️ Fout bij laden ${departmentName}:`, error);
       }
     };
-    
-    loadSavedCount();
+    loadData();
   }, [departmentName]);
 
-  function handleIncrement() {
-    const newCount = count + 1;
-    setCount(newCount);
-    updateDepartment(departmentName, newCount); 
-  }
-
-  function handleDecrement() {
-    if (count > 0) {
-      const newCount = count - 1;
-      setCount(newCount);
-      updateDepartment(departmentName, newCount);
+  // 2. Als je op de knop drukt
+  const increment = async () => {
+    try {
+      const newCount = count + 1;
+      setCount(newCount); // Update scherm direct (lekker snel)
+      
+      console.log(`🆙 Updaten ${departmentName} naar ${newCount}...`);
+      
+      // Update de database op de achtergrond (SQLite + Supabase)
+      await updateDepartment(departmentName, newCount);
+    } catch (error) {
+      console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
+      // Optioneel: zet teller terug als het mislukt
+      // setCount(count); 
     }
-  }
-
-  function handleReset() {
-    setCount(0);
-    updateDepartment(departmentName, 0); 
-    toggleModal();
-  }
-
-  function toggleModal() {
-    setModalVisible(!isModalVisible);
-  }
+  };
 
   return (
-   <View style={[styles.counter_container, styles.style]}>
-      <Text style={styles.app_text}>{[departmentName,": " , count]}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>{departmentName}</Text>
       
-      <View style = {styles.button_group}>
-        <TouchableOpacity 
-          onPress={handleDecrement}
-          style={[styles.button, styles.button_layout]} 
-        >
-        <Text style={styles.button_text}>-</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={handleIncrement}
-          style={[styles.button, styles.button_layout]}
-        >
-          <Text style={styles.button_text}>+</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={toggleModal}
-          style={[styles.button, styles.button_layout]}
-        >
-        <Text style={styles.button_text}>reset</Text> 
-        </TouchableOpacity>
+      <View style={styles.counterContainer}>
+        <Text style={styles.countText}>{count}</Text>
       </View>
-        
-      <Modal isVisible={isModalVisible} onBackdropPress={toggleModal}>
-        <View style={styles.modal_content}>
-          <Text style={styles.modal_text}>Wil je de teller resetten?</Text>
-          
-          <TouchableOpacity onPress={handleReset} style={[styles.modal_button, styles.button]}>
-            <Text style={styles.modal_button_text}>Reset Teller</Text>
-          </TouchableOpacity>
 
-          <Text style={styles.modal_text}>Klik ergens om dit pop-upvenster te sluiten</Text>
-        </View>
-      </Modal>
+      <TouchableOpacity onPress={increment} style={styles.button}>
+        <Text style={styles.buttonText}>+1 Stem</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
-export default DepartmentCounter;
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'white',
+    padding: 20,
+    marginVertical: 10,
+    borderRadius: 10,
+    // Schaduw voor een beetje diepte
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  counterContainer: {
+    backgroundColor: '#f0f0f0',
+    padding: 15,
+    borderRadius: 50,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  countText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#2e78b7',
+  },
+  button: {
+    backgroundColor: '#2e78b7',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});

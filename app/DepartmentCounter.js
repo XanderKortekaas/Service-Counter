@@ -70,9 +70,11 @@ function DepartmentCounter({ departmentName, initialCount, onUpdate }) {
         <View style={styles.modal_content}>
           <Text style={styles.modal_text}>Wil je de teller resetten?</Text>
           
-          <TouchableOpacity onPress={handleReset} style={[styles.modal_button, styles.button, {marginBottom: 5}]}>
-            <Text style={styles.modal_button_text}>Reset Teller</Text>
-          </TouchableOpacity>
+          <View style={styles.button_group}>
+            <TouchableOpacity onPress={handleReset} style={[styles.modal_button, styles.button, {marginBottom: 5}]}>
+              <Text style={styles.modal_text}>Reset Teller</Text>
+            </TouchableOpacity>
+          </View>
 
           <Text style={[styles.modal_text, { marginTop: 5, fontSize: 16 }]}>
             Klik op de achtergrond om te sluiten.

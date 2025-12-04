@@ -1,189 +1,135 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
 import * as SQLite from 'expo-sqlite';
+import 'react-native-url-polyfill/auto';
 
-// Open database met nieuwe API
-const db = SQLite.openDatabaseSync('departments.db');
+const SUPABASE_URL = 'https://camsifkzljqvhccbvkyy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbXNpZmt6bGpxdmhjY2J2a3l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MzkxNzEsImV4cCI6MjA4MDExNTE3MX0.htmoTRzz2ZUToee7EL2sZ6zNScQkHasR_lFB1EKbzPk';
 
-// Initialiseer tabellen
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
+
+let db = null;
+
+const initDatabase = async () => {
+  if (!db) {
+    try {
+      db = await SQLite.openDatabaseAsync('myDatabase.db');
+      console.log('Local Database geopend');
+    } catch (error) {
+      console.error("Fout bij het openen van de database:", error);
+    }
+  }
+  return db;
+};
+
 export const createTables = async () => {
+  const database = await initDatabase();
+  try {
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS departments (
+        name TEXT PRIMARY KEY NOT NULL, 
+        count INTEGER DEFAULT 0,
+        last_updated TEXT
+      );
+    `);
+
     try {
-        await db.execAsync(`
-            CREATE TABLE IF NOT EXISTS departments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE,
-                count INTEGER DEFAULT 0
-            );
-        `);
-        console.log('✅ Database tables created successfully');
-        return true;
-    } catch (error) {
-        console.error('❌ Error creating tables:', error);
-        throw error;
+        await database.execAsync('ALTER TABLE departments ADD COLUMN last_updated TEXT');
+    } catch (e) {
     }
+
+    console.log('Lokale tabellen gecontroleerd');
+  } catch (error) {
+    console.error("Fout bij aanmaken tabellen:", error);
+  }
 };
 
-// Haal alle departments op
-export const getAllDepartments = async () => {
-    try {
-        const result = await db.getAllAsync(
-            'SELECT * FROM departments ORDER BY name ASC'
-        );
-        return result || [];
-    } catch (error) {
-        console.error('❌ Error getting departments:', error);
-        throw error;
+export const updateDepartment = async (name, newCount) => {
+  const database = await initDatabase();
+  const now = new Date().toISOString(); 
+
+  try {
+    await database.runAsync(
+      'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
+      [name, newCount, now]
+    );
+    console.log(`Lokaal geüpdatet: ${name} -> ${newCount}`);
+
+    const { error } = await supabase
+      .from('HelpdeskDB') 
+      .upsert(
+        { 
+            Name: name,          
+            Count: newCount,     
+            Last_Updated: now    
+        },
+        { onConflict: 'Name' }
+      );
+
+    if (error) {
+        console.error("❌ HelpdeskDB Update Fout:", JSON.stringify(error, null, 2));
+    } else {
+        console.log("✅ Succes: Stand bijgewerkt in Supabase!");
     }
+
+  } catch (error) {
+    console.error(`Fout bij updaten department ${name}:`, error);
+  }
 };
 
-// Voeg nieuw department toe
-export const addDepartment = async (name) => {
-    try {
-        const result = await db.runAsync(
-            'INSERT INTO departments (name, count) VALUES (?, 0)',
-            [name.trim()]
-        );
-        console.log(`✅ Department "${name}" added with ID: ${result.lastInsertRowId}`);
-        return result;
-    } catch (error) {
-        console.error('❌ Error adding department:', error);
-        throw error;
-    }
-};
-
-// Update department naam
-export const updateDepartmentName = async (oldName, newName) => {
-    try {
-        const result = await db.runAsync(
-            'UPDATE departments SET name = ? WHERE name = ?',
-            [newName.trim(), oldName]
-        );
-        console.log(`✅ Department renamed from "${oldName}" to "${newName}"`);
-        return result;
-    } catch (error) {
-        console.error('❌ Error updating department name:', error);
-        throw error;
-    }
-};
-
-// Verwijder department
-export const deleteDepartment = async (name) => {
-    try {
-        const result = await db.runAsync(
-            'DELETE FROM departments WHERE name = ?',
-            [name]
-        );
-        console.log(`✅ Department "${name}" deleted`);
-        return result;
-    } catch (error) {
-        console.error('❌ Error deleting department:', error);
-        throw error;
-    }
-};
-
-// Update count naar specifieke waarde
-export const updateDepartmentCount = async (name, newCount) => {
-    try {
-        const result = await db.runAsync(
-            'UPDATE departments SET count = ? WHERE name = ?',
-            [newCount, name]
-        );
-        console.log(`✅ Department "${name}" count updated to ${newCount}`);
-        return result;
-    } catch (error) {
-        console.error('❌ Error updating count:', error);
-        throw error;
-    }
-};
-
-// Verhoog count met 1
-export const incrementCount = async (name) => {
-    try {
-        const result = await db.runAsync(
-            'UPDATE departments SET count = count + 1 WHERE name = ?',
-            [name]
-        );
-        console.log(`✅ Department "${name}" count incremented`);
-        return result;
-    } catch (error) {
-        console.error('❌ Error incrementing count:', error);
-        throw error;
-    }
-};
-
-// Verlaag count met 1 (niet onder 0)
-export const decrementCount = async (name) => {
-    try {
-        const result = await db.runAsync(
-            'UPDATE departments SET count = count - 1 WHERE name = ? AND count > 0',
-            [name]
-        );
-        console.log(`✅ Department "${name}" count decremented`);
-        return result;
-    } catch (error) {
-        console.error('❌ Error decrementing count:', error);
-        throw error;
-    }
-};
-
-// Reset count naar 0
-export const resetDepartmentCount = async (name) => {
-    return updateDepartmentCount(name, 0);
-};
-
-// Haal één specifiek department op
 export const getDepartment = async (name) => {
-    try {
-        const result = await db.getFirstAsync(
-            'SELECT * FROM departments WHERE name = ?',
-            [name]
-        );
-        return result; 
-    } catch (error) {
-        console.error('❌ Error getting department:', error);
-        throw error;
-    }
+  const database = await initDatabase();
+  try {
+    const result = await database.getFirstAsync(
+      'SELECT count FROM departments WHERE name = ?',
+      [name]
+    );
+    if (result) return result.count;
+    return 0; 
+  } catch (error) {
+    console.error(`Fout bij ophalen department ${name}:`, error);
+    return 0;
+  }
 };
 
-// Reset ALLE counts naar 0
-export const resetAllCounts = async () => {
-    try {
-        const result = await db.runAsync('UPDATE departments SET count = 0');
-        console.log('✅ All department counts reset to 0');
-        return result;
-    } catch (error) {
-        console.error('❌ Error resetting all counts:', error);
-        throw error;
-    }
+export const getAllDepartments = async () => {
+  const database = await initDatabase();
+  const results = await database.getAllAsync('SELECT * FROM departments ORDER BY name');
+  return results;
 };
 
-// Verwijder ALLE departments (gebruik voorzichtig!)
-export const deleteAllDepartments = async () => {
-    try {
-        const result = await db.runAsync('DELETE FROM departments');
-        console.log('✅ All departments deleted');
-        return result;
-    } catch (error) {
-        console.error('❌ Error deleting all departments:', error);
-        throw error;
+export const syncAndCleanup = async () => {
+  const database = await initDatabase();
+  console.log("Start synchronisatie...");
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { data, error } = await supabase
+    .from('HelpdeskDB')
+    .select('*')
+    .gt('Last_Updated', thirtyDaysAgo.toISOString()); 
+
+  if (data && data.length > 0) {
+    for (const item of data) {
+      await database.runAsync(
+        'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
+        [item.Name, item.Count, item.Last_Updated]
+      );
     }
+    console.log(`${data.length} items gedownload.`);
+  }
+
+  await database.runAsync(
+    'DELETE FROM departments WHERE last_updated < ?',
+    [thirtyDaysAgo.toISOString()]
+  );
+  console.log("Oude data opgeschoond.");
 };
-
-// Initialiseer met test data (alleen als database leeg is)
-export const initializeTestData = async () => {
-    try {
-        const existing = await getAllDepartments();
-        
-        if (existing.length === 0) {
-            await addDepartment('IT');
-            await addDepartment('Finance');
-            await addDepartment('Internal Affairs');
-            console.log('✅ Test data initialized');
-        } else {
-            console.log('ℹ️ Database already has data, skipping test data');
-        }
-    } catch (error) {
-        console.error('❌ Error initializing test data:', error);
-    }
-};
-
-export { db };
-

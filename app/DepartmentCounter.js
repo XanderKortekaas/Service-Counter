@@ -1,88 +1,123 @@
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import Modal from 'react-native-modal';
-import { updateDepartmentCount } from './_database';
-import styles from './_styleSheet';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getDepartment, updateDepartment } from './_database';
 
-function DepartmentCounter({ departmentName, initialCount, onUpdate }) {
-  
-  const [count, setCount] = useState(initialCount || 0);
-  const [isModalVisible, setModalVisible] = useState(false);
-  
+export default function DepartmentCounter({ departmentName }) {
+  const [count, setCount] = useState(0);
+
   useEffect(() => {
-    setCount(initialCount);
-  }, [initialCount]);
+    const loadData = async () => {
+      try {
+        console.log(`🔍 Laden voor ${departmentName}...`);
+        const savedCount = await getDepartment(departmentName);
+        
+        setCount(savedCount || 0);
+      } catch (error) {
+        console.error(`⚠️ Fout bij laden ${departmentName}:`, error);
+      }
+    };
+    loadData();
+  }, [departmentName]);
 
-
-  async function handleIncrement() {
-    const newCount = count + 1;
-    setCount(newCount);
-    await updateDepartmentCount(departmentName, newCount); 
-  }
-
-  async function handleDecrement() {
-    if (count > 0) {
-      const newCount = count - 1;
-      setCount(newCount);
-      await updateDepartmentCount(departmentName, newCount);
-      if (onUpdate) onUpdate();
+  const increment = async () => {
+    try {
+      const newCount = count + 1;
+      setCount(newCount); 
+      
+      console.log(`🆙 Updaten ${departmentName} naar ${newCount}...`);
+      
+      await updateDepartment(departmentName, newCount);
+    } catch (error) {
+      console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
     }
-  }
+  };
 
-  async function handleReset() {
-    setCount(0);
-    await updateDepartmentCount(departmentName, 0); 
-    toggleModal();
-  }
-
-  function toggleModal() {
-    setModalVisible(!isModalVisible);
-  }
+  const decrement = async () => {
+    try {
+      const newCount = count - 1;
+      setCount(newCount); 
+      
+      console.log(`⬇️ Updaten ${departmentName} naar ${newCount}...`);
+      
+      await updateDepartment(departmentName, newCount);
+    } catch (error) {
+      console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
+    }
+  };
 
   return (
-   <View style={[styles.counter_container, styles.style]}>
-      <Text style={styles.department_name_text}>{departmentName}: {count}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>{departmentName}</Text>
       
-      <View style = {styles.button_group}>
-        <TouchableOpacity 
-          onPress={handleDecrement}
-          style={[styles.button, styles.button_layout]} 
-        >
-        <Text style={styles.button_text}>-</Text>
+      <View style={styles.counterContainer}>
+        <Text style={styles.countText}>{count}</Text>
+      </View>
+
+      <View style={styles.buttonRow}>
+        <TouchableOpacity onPress={decrement} style={[styles.button, styles.buttonRed]}>
+            <Text style={styles.buttonText}>-1</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={handleIncrement}
-          style={[styles.button, styles.button_layout]}
-        >
-          <Text style={styles.button_text}>+</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={toggleModal}
-          style={[styles.button, styles.button_layout]}
-        >
-        <Text style={styles.button_text}>reset</Text> 
+
+        <TouchableOpacity onPress={increment} style={styles.button}>
+            <Text style={styles.buttonText}>+1 Stem</Text>
         </TouchableOpacity>
       </View>
-        
-      <Modal isVisible={isModalVisible} onBackdropPress={toggleModal}>
-        <View style={styles.modal_content}>
-          <Text style={styles.modal_text}>Wil je de teller resetten?</Text>
-          
-          <View style={styles.button_group}>
-            <TouchableOpacity onPress={handleReset} style={[styles.modal_button, styles.button, {marginBottom: 5}]}>
-              <Text style={styles.modal_text}>Reset Teller</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Text style={[styles.modal_text, { marginTop: 5, fontSize: 16 }]}>
-            Klik op de achtergrond om te sluiten.
-          </Text>
-        </View>
-      </Modal>
     </View>
   );
 }
 
-export default React.memo(DepartmentCounter);
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'white',
+    padding: 20,
+    marginVertical: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  counterContainer: {
+    backgroundColor: '#f0f0f0',
+    padding: 15,
+    borderRadius: 50,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  countText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#2e78b7',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  button: {
+    backgroundColor: '#2e78b7',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  buttonRed: {
+    backgroundColor: '#d32f2f',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});

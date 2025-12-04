@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// We importeren jouw database functies
-import { getDepartment, updateDepartment } from './database';
+import { getDepartment, updateDepartment } from './_database';
 
 export default function DepartmentCounter({ departmentName }) {
   const [count, setCount] = useState(0);
 
-  // 1. Bij het laden van de component: Haal de huidige stand uit SQLite
   useEffect(() => {
     const loadData = async () => {
       try {
         console.log(`🔍 Laden voor ${departmentName}...`);
         const savedCount = await getDepartment(departmentName);
         
-        // Zorg dat we altijd een getal hebben, ook als de DB null teruggeeft
         setCount(savedCount || 0);
       } catch (error) {
         console.error(`⚠️ Fout bij laden ${departmentName}:`, error);
@@ -22,20 +19,29 @@ export default function DepartmentCounter({ departmentName }) {
     loadData();
   }, [departmentName]);
 
-  // 2. Als je op de knop drukt
   const increment = async () => {
     try {
       const newCount = count + 1;
-      setCount(newCount); // Update scherm direct (lekker snel)
+      setCount(newCount); 
       
       console.log(`🆙 Updaten ${departmentName} naar ${newCount}...`);
       
-      // Update de database op de achtergrond (SQLite + Supabase)
       await updateDepartment(departmentName, newCount);
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
-      // Optioneel: zet teller terug als het mislukt
-      // setCount(count); 
+    }
+  };
+
+  const decrement = async () => {
+    try {
+      const newCount = count - 1;
+      setCount(newCount); 
+      
+      console.log(`⬇️ Updaten ${departmentName} naar ${newCount}...`);
+      
+      await updateDepartment(departmentName, newCount);
+    } catch (error) {
+      console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
     }
   };
 
@@ -47,9 +53,15 @@ export default function DepartmentCounter({ departmentName }) {
         <Text style={styles.countText}>{count}</Text>
       </View>
 
-      <TouchableOpacity onPress={increment} style={styles.button}>
-        <Text style={styles.buttonText}>+1 Stem</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity onPress={decrement} style={[styles.button, styles.buttonRed]}>
+            <Text style={styles.buttonText}>-1</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={increment} style={styles.button}>
+            <Text style={styles.buttonText}>+1 Stem</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -60,7 +72,6 @@ const styles = StyleSheet.create({
     padding: 20,
     marginVertical: 10,
     borderRadius: 10,
-    // Schaduw voor een beetje diepte
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -89,11 +100,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2e78b7',
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 15,
+  },
   button: {
     backgroundColor: '#2e78b7',
     paddingVertical: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     borderRadius: 25,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  buttonRed: {
+    backgroundColor: '#d32f2f',
   },
   buttonText: {
     color: 'white',

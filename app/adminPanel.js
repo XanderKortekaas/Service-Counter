@@ -68,21 +68,21 @@ const DepartmentListScreen = () => {
         const totalCount = departments.reduce((sum, d) => sum + d.count, 0);
 
         const shareMessage = 
-`Afdelingen Overzicht Rapport:
+    `Afdelingen Overzicht Rapport:
 
----
+    ---
 
-Aantal Afdelingen: ${departments.length}
-Totaal Aantal Items/Personen: ${totalCount}
+    Aantal Afdelingen: ${departments.length}
+    Totaal Aantal Items/Personen: ${totalCount}
 
----
+    ---
 
-Gedetailleerde Lijst:
-${departmentListText}
+    Gedetailleerde Lijst:
+    ${departmentListText}
 
----
+    ---
 
-Dit rapport is gegenereerd vanuit de mobiele app.`;
+    Dit rapport is gegenereerd vanuit de mobiele app.`;
 
         try {
             await Share.share({

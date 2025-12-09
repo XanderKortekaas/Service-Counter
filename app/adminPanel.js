@@ -1,27 +1,112 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
     Dimensions,
     FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
     Share,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import color from "./_color";
-import { getAllDepartments } from './_database';
+import {
+    addDepartment,
+    deleteDepartment,
+    getAllDepartments
+} from './_database';
 import styles from "./_styleSheet";
 
 const screenWidth = Dimensions.get("window").width; 
 
+// ============================================
+// ADD DEPARTMENT MODAL COMPONENT (inline)
+// ============================================
+const AddDepartmentModal = ({ visible, onClose, onAdd }) => {
+    const [departmentName, setDepartmentName] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleAdd = async () => {
+        if (!departmentName.trim()) {
+            Alert.alert('Fout', 'Vul een afdeling naam in');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await onAdd(departmentName.trim());
+            setDepartmentName('');
+            onClose();
+        } catch (error) {
+            Alert.alert('Fout', 'Kon afdeling niet toevoegen. Deze naam bestaat mogelijk al.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Modal
+            visible={visible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={onClose}
+        >
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.overlay}
+            >
+                <View style={styles.modalContent}>
+                    <Text style={styles.title}>Nieuwe Afdeling</Text>
+                    
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Afdeling naam..."
+                        placeholderTextColor={color.GRAY_200}
+                        value={departmentName}
+                        onChangeText={setDepartmentName}
+                        autoFocus
+                    />
+
+                    <View style={styles.button_group}>
+                        <TouchableOpacity
+                            style={[styles.button, styles.cancelButton]}
+                            onPress={onClose}
+                            disabled={loading}
+                        >
+                            <Text style={styles.buttonText}>Annuleren</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.button, styles.addButton]}
+                            onPress={handleAdd}
+                            disabled={loading}
+                        >
+                            <Text style={styles.buttonText}>
+                                {loading ? 'Bezig...' : 'Toevoegen'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </KeyboardAvoidingView>
+        </Modal>
+    );
+};
+
+// ============================================
+// MAIN DEPARTMENT LIST COMPONENT
+// ============================================
 const DepartmentListScreen = () => {
     const navigation = useNavigation();
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showAddModal, setShowAddModal] = useState(false); 
     
     const loadDepartments = useCallback(async() => {
         setLoading(true);
@@ -43,15 +128,59 @@ const DepartmentListScreen = () => {
     const handleRefresh = () => {
         loadDepartments();
     }
+
+    const handleAddDepartment = useCallback(async (name) => { 
+        try {
+            await addDepartment(name);
+            await loadDepartments();
+            Alert.alert('Succes', `Afdeling "${name}" toegevoegd!`);
+        } catch (error) {
+            console.error("Fout bij toevoegen afdeling:", error);
+            throw error;
+        }
+    }, [loadDepartments]);
+
+    const handleDeleteDepartment = useCallback((name) => { 
+        Alert.alert(
+            'Verwijderen',
+            `Weet je zeker dat je "${name}" wilt verwijderen?`,
+            [
+                { text: 'Annuleren', style: 'cancel' },
+                {
+                    text: 'Verwijderen',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteDepartment(name);
+                            await loadDepartments();
+                            Alert.alert('Succes', 'Afdeling verwijderd');
+                        } catch (error) {
+                            Alert.alert('Fout', 'Kon afdeling niet verwijderen');
+                        }
+                    }
+                }
+            ]
+        );
+    }, [loadDepartments]);
     
     const renderItem = ({item}) => (
-        <View style={styles.department_section }>
-            <Text style={styles.department}>
-                {[item.name,':']}
-            </Text>
-            <Text style={styles.department_count}>
-                {item.count}
-            </Text>
+        <View style={[styles.department_section, { justifyContent: 'space-between' }]}>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.department}>
+                    {[item.name,':']}
+                </Text>
+                <Text style={styles.department_count}>
+                    {item.count}
+                </Text>
+            </View>
+            <TouchableOpacity // <-- Verwijder knop toegevoegd
+                onPress={() => handleDeleteDepartment(item.name)}
+                style={[styles.button_layout, { backgroundColor: '#ff4444', width: 100 }]}
+            >
+                <Text style={[styles.button_text, { color: 'white' }]}>
+                    Verwijder
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 
@@ -158,14 +287,24 @@ const DepartmentListScreen = () => {
     
     return(
         <SafeAreaView style={[styles.style, { flex: 1 }]}>
-            <TouchableOpacity 
-                onPress={() => navigation.goBack()} 
-                style={[styles.button_layout, { margin: 20 }]}
-            >
-                <Text style={styles.button_text}>
-            ← Terug naar Home</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 20, gap: 10 }}>
+                <TouchableOpacity 
+                    onPress={() => navigation.goBack()} 
+                    style={[styles.button_layout, { flex: 1, borderColor: color.GREEN_500 }]}
+                >
+                    <Text style={styles.button_text}>
+                ← Terug naar Home</Text>
+                </TouchableOpacity>
 
+                <TouchableOpacity // <-- Knop voor toevoegen toegevoegd
+                    onPress={() => setShowAddModal(true)}
+                    style={[styles.button_layout, { flex: 1, borderColor: color.BLUE_700 }]}
+                >
+                    <Text style={styles.button_text}>
+                + Nieuwe Afdeling</Text>
+                </TouchableOpacity>
+            </View>
+            
             <Text style={[styles.app_header, 
         { marginBottom: 20 }]}>
                 Afdelingen Overzicht
@@ -214,6 +353,13 @@ const DepartmentListScreen = () => {
                 <Text style={styles.button_text}>
             Ververs Data</Text>
             </TouchableOpacity>
+
+            {/* Add Department Modal Component */}
+            <AddDepartmentModal
+                visible={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onAdd={handleAddDepartment}
+            />
         </SafeAreaView>
     );
 };

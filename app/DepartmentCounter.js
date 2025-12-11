@@ -1,32 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { getDepartment, updateDepartment } from './_database';
+import { updateDepartment } from './_database'; // getDepartment is niet meer nodig
 
-export default function DepartmentCounter({ departmentName }) {
-  const [count, setCount] = useState(0);
+// initialCount en onUpdate toegevoegd
+export default function DepartmentCounter({ departmentName, initialCount, onUpdate }) { 
+  // Gebruik de prop initialCount (of 0) als startwaarde
+  const [count, setCount] = useState(initialCount || 0);
 
+  // Zorg ervoor dat de state wordt bijgewerkt wanneer de prop verandert (bij laden/verversen)
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        console.log(`🔍 Laden voor ${departmentName}...`);
-        const savedCount = await getDepartment(departmentName);
-        
-        setCount(savedCount || 0);
-      } catch (error) {
-        console.error(`⚠️ Fout bij laden ${departmentName}:`, error);
-      }
-    };
-    loadData();
-  }, [departmentName]);
+    setCount(initialCount || 0);
+  }, [initialCount]);
+  
 
   const increment = async () => {
     try {
       const newCount = count + 1;
       setCount(newCount); 
       
-      console.log(`🆙 Updaten ${departmentName} naar ${newCount}...`);
-      
       await updateDepartment(departmentName, newCount);
+      
+      // Roep de callback aan om de totale telling bij te werken op de indexpagina
+      if (onUpdate) onUpdate(); 
+
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
     }
@@ -34,12 +30,14 @@ export default function DepartmentCounter({ departmentName }) {
 
   const decrement = async () => {
     try {
-      const newCount = count - 1;
+      const newCount = Math.max(0, count - 1); 
       setCount(newCount); 
       
-      console.log(`⬇️ Updaten ${departmentName} naar ${newCount}...`);
-      
       await updateDepartment(departmentName, newCount);
+      
+      // Roep de callback aan
+      if (onUpdate) onUpdate(); 
+
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
     }
@@ -54,7 +52,11 @@ export default function DepartmentCounter({ departmentName }) {
       </View>
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity onPress={decrement} style={[styles.button, styles.buttonRed]}>
+        <TouchableOpacity 
+            onPress={decrement} 
+            style={[styles.button, styles.buttonRed]}
+            disabled={count <= 0} // Knop uitschakelen als telling 0 is
+        >
             <Text style={styles.buttonText}>-1</Text>
         </TouchableOpacity>
 

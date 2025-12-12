@@ -1,3 +1,4 @@
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -5,12 +6,12 @@ import {
     Alert,
     Dimensions,
     FlatList,
-    KeyboardAvoidingView,
-    Modal,
+    KeyboardAvoidingView, // Voor modal
+    Modal, // Voor modal
     Platform,
     Share,
     Text,
-    TextInput,
+    TextInput, // Voor modal
     TouchableOpacity,
     View,
 } from "react-native";
@@ -18,16 +19,16 @@ import { BarChart } from "react-native-chart-kit";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import color from "./_color";
 import {
-    addDepartment,
-    deleteDepartment,
-    getAllDepartments
+    addDepartment, // Nodig voor beheer
+    deleteDepartment, // Nodig voor beheer
+    getAllDepartments // Aangepast om optioneel met datums te werken
 } from './_database';
 import styles from "./_styleSheet";
 
-const screenWidth = Dimensions.get("window").width; 
+const screenWidth = Dimensions.get("window").width;
 
 // ============================================
-// ADD DEPARTMENT MODAL COMPONENT (inline)
+// ADD DEPARTMENT MODAL COMPONENT
 // ============================================
 const AddDepartmentModal = ({ visible, onClose, onAdd }) => {
     const [departmentName, setDepartmentName] = useState('');
@@ -45,6 +46,7 @@ const AddDepartmentModal = ({ visible, onClose, onAdd }) => {
             setDepartmentName('');
             onClose();
         } catch (error) {
+            // Foutmelding kan vanuit database komen dat de naam al bestaat
             Alert.alert('Fout', 'Kon afdeling niet toevoegen. Deze naam bestaat mogelijk al.');
         } finally {
             setLoading(false);
@@ -100,39 +102,71 @@ const AddDepartmentModal = ({ visible, onClose, onAdd }) => {
 };
 
 // ============================================
-// MAIN DEPARTMENT LIST COMPONENT
+// HOOFD ADMIN COMPONENT
 // ============================================
-const DepartmentListScreen = () => {
+const AdminPanel = () => {
     const navigation = useNavigation();
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showAddModal, setShowAddModal] = useState(false); 
-    
-    const loadDepartments = useCallback(async() => {
+    const [showAddModal, setShowAddModal] = useState(false); // Voor toevoegen modal
+
+    // --- DATUM CONFIGURATIE (Historische Weergave) ---
+    const [mode, setMode] = useState('current'); // 'current', 'single', of 'range'
+    const [date, setDate] = useState(new Date()); 
+    const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - 7))); 
+    const [endDate, setEndDate] = useState(new Date()); 
+
+    // Picker instellingen
+    const [showPicker, setShowPicker] = useState(false);
+    const [pickerType, setPickerType] = useState('date'); // 'date', 'start' of 'end'
+
+    const loadDepartments = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getAllDepartments();
+            let queryStart = null;
+            let queryEnd = null;
+
+            // Bepaal de tijdsperiode
+            if (mode === 'single') {
+                queryStart = new Date(date);
+                queryStart.setHours(0, 0, 0, 0);
+                
+                queryEnd = new Date(date);
+                queryEnd.setHours(23, 59, 59, 999);
+            } else if (mode === 'range') {
+                queryStart = new Date(startDate);
+                queryStart.setHours(0, 0, 0, 0);
+
+                queryEnd = new Date(endDate);
+                queryEnd.setHours(23, 59, 59, 999);
+            }
+            
+            // Haal data op. Als mode 'current' is, worden queryStart/queryEnd null gelaten
+            // en haalt getAllDepartments de huidige stand op (zoals gedefinieerd in _database.js)
+            const data = await getAllDepartments(queryStart, queryEnd);
             setDepartments(data);
-        } catch (error){
-            console.error("something went wrong while loading all departments: ", error);
-            Alert.alert("Fout", "Kon de afdelingen niet laden vanuit de database.");
-        } finally{
+            
+        } catch (error) {
+            console.error("Fout bij laden admin panel data:", error);
+            Alert.alert("Fout", "Kon de afdelingsdata niet laden.");
+        } finally {
             setLoading(false);
         }
-    }, []);
-    
+    }, [mode, date, startDate, endDate]);
+
     useEffect(() => {
         loadDepartments();
-    }, [loadDepartments]); 
-    
+    }, [loadDepartments]);
+
     const handleRefresh = () => {
         loadDepartments();
     }
 
-    const handleAddDepartment = useCallback(async (name) => { 
+    // --- BEHEER FUNCTIES ---
+    const handleAddDepartment = useCallback(async (name) => {
         try {
             await addDepartment(name);
-            await loadDepartments();
+            await loadDepartments(); // Herlaad na toevoegen
             Alert.alert('Succes', `Afdeling "${name}" toegevoegd!`);
         } catch (error) {
             console.error("Fout bij toevoegen afdeling:", error);
@@ -140,10 +174,10 @@ const DepartmentListScreen = () => {
         }
     }, [loadDepartments]);
 
-    const handleDeleteDepartment = useCallback((name) => { 
+    const handleDeleteDepartment = useCallback((name) => {
         Alert.alert(
             'Verwijderen',
-            `Weet je zeker dat je "${name}" wilt verwijderen?`,
+            `Weet je zeker dat je "${name}" wilt verwijderen? Dit verwijdert ook de teller in Supabase.`,
             [
                 { text: 'Annuleren', style: 'cancel' },
                 {
@@ -152,7 +186,7 @@ const DepartmentListScreen = () => {
                     onPress: async () => {
                         try {
                             await deleteDepartment(name);
-                            await loadDepartments();
+                            await loadDepartments(); // Herlaad na verwijderen
                             Alert.alert('Succes', 'Afdeling verwijderd');
                         } catch (error) {
                             Alert.alert('Fout', 'Kon afdeling niet verwijderen');
@@ -162,197 +196,221 @@ const DepartmentListScreen = () => {
             ]
         );
     }, [loadDepartments]);
-    
-    const renderItem = ({item}) => (
+    // ----------------------
+
+    // Datum selectie handler
+    const onDateChange = (event, selectedDate) => {
+        if (Platform.OS === 'android') setShowPicker(false); 
+        
+        if (selectedDate) {
+            if (pickerType === 'date') setDate(selectedDate);
+            if (pickerType === 'start') setStartDate(selectedDate);
+            if (pickerType === 'end') setEndDate(selectedDate);
+        }
+    };
+
+    const formatDate = (rawDate) => {
+        return rawDate.toLocaleDateString('nl-NL');
+    }
+
+    const renderItem = ({ item }) => (
+        // Toon de huidige stand (met verwijderknop) of historische telling
         <View style={[styles.department_section, { justifyContent: 'space-between' }]}>
             <View style={{ flex: 1 }}>
-                <Text style={styles.department}>
-                    {[item.name,':']}
-                </Text>
-                <Text style={styles.department_count}>
-                    {item.count}
-                </Text>
+                <Text style={styles.department}>{[item.name, ':']}</Text>
+                <Text style={styles.department_count}>{item.count}</Text>
             </View>
-            <TouchableOpacity // <-- Verwijder knop toegevoegd
-                onPress={() => handleDeleteDepartment(item.name)}
-                style={[styles.button_layout, { backgroundColor: '#ff4444', width: 100 }]}
-            >
-                <Text style={[styles.button_text, { color: 'white' }]}>
-                    Verwijder
-                </Text>
-            </TouchableOpacity>
+            {(mode === 'current' || mode === 'single' && new Date(item.last_updated).getDate() === new Date().getDate()) && (
+                <TouchableOpacity // Alleen verwijderen toestaan in "Huidige Stand" modus of vandaag
+                    onPress={() => handleDeleteDepartment(item.name)}
+                    style={[styles.button_layout, { backgroundColor: '#ff4444', width: 100 }]}
+                >
+                    <Text style={[styles.button_text, { color: 'white' }]}>
+                        Verwijder
+                    </Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 
     const handleShareData = async () => {
         if (departments.length === 0) {
-            Alert.alert("Geen Data", "Er is geen afdelingsdata om te delen.");
+            Alert.alert("Geen Data", "Er is niks om te delen.");
             return;
         }
 
-        const departmentListText = departments
-            .map(d => `${d.name}: ${d.count}`)
-            .join('\n');
+        const listText = departments.map(d => `${d.name}: ${d.count}`).join('\n');
+        const total = departments.reduce((sum, d) => sum + d.count, 0);
+        
+        let periodeLabel = 'Huidige Stand';
+        if (mode === 'single') {
+            periodeLabel = `Rapport: ${formatDate(date)}`;
+        } else if (mode === 'range') {
+            periodeLabel = `Rapport: ${formatDate(startDate)} t/m ${formatDate(endDate)}`;
+        }
 
-        const totalCount = departments.reduce((sum, d) => sum + d.count, 0);
 
         const shareMessage = 
-    `Afdelingen Overzicht Rapport:
+    `Afdelingen Overzicht Rapport (${periodeLabel}):
 
     ---
 
     Aantal Afdelingen: ${departments.length}
-    Totaal Aantal Items/Personen: ${totalCount}
+    Totaal Aantal Items/Personen: ${total}
 
     ---
 
     Gedetailleerde Lijst:
-    ${departmentListText}
+    ${listText}
 
     ---
 
     Dit rapport is gegenereerd vanuit de mobiele app.`;
 
+
         try {
             await Share.share({
                 message: shareMessage,
-                title: 'Rapport Afdelingen Overzicht',
+                title: 'Admin Rapport',
             }, {
-                dialogTitle: 'Deel Afdelingen Data via...',
+                dialogTitle: 'Deel Rapport via...',
             });
-
         } catch (error) {
-            console.error("Fout bij delen: ", error);
-            Alert.alert("Fout", "Kon het deelscherm niet openen.");
+            Alert.alert("Fout", "Kon niet delen.");
         }
     };
 
     const renderChart = () => {
+        if (departments.length === 0) return null;
+
         const chartData = {
             labels: departments.map(d => d.name),
-            datasets: [
-                {
-                    data: departments.map(d => d.count),
-                },
-            ],
+            datasets: [{ data: departments.map(d => d.count) }],
         };
+        
+        const chartTitle = mode === 'current' ? 'Huidige Afdelingen Stand' : 'Historisch Overzicht';
 
-        const chartConfig = {
-            backgroundColor: color.GREEN_200,
-            backgroundGradientFrom: color.GREEN_200,
-            backgroundGradientTo: color.GREEN_600,
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            style: {
-                borderRadius: 16
-            },
-            propsForLabels: {
-                fontSize: 10,
-            }
-        };
-
-        if (departments.length === 0) return null;
 
         return (
             <View style={{ marginVertical: 20, alignItems: 'center' }}>
-                <Text style={[styles.app_text, {marginBottom: 10, fontWeight: 'bold'}]}>
-                    Afdelingen Data Grafiek
+                <Text style={[styles.app_text, { marginBottom: 10, fontWeight: 'bold' }]}>
+                    {chartTitle}
                 </Text>
                 <BarChart
                     data={chartData}
                     width={screenWidth - 40}
                     height={220}
                     yAxisLabel=""
-                    chartConfig={chartConfig}
-                    verticalLabelRotation={30}
-                    style={{
-                        marginVertical: 8,
-                        borderRadius: 16
+                    chartConfig={{
+                        backgroundColor: color.GREEN_200,
+                        backgroundGradientFrom: color.GREEN_200,
+                        backgroundGradientTo: color.GREEN_600,
+                        decimalPlaces: 0,
+                        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        style: { borderRadius: 16 },
+                        propsForLabels: { fontSize: 10 }
                     }}
+                    verticalLabelRotation={30}
+                    style={{ marginVertical: 8, borderRadius: 16 }}
                 />
             </View>
         );
     };
-    
-    if(loading){
-        return(
+
+    if (loading) {
+        return (
             <View style={styles.center}>
                 <ActivityIndicator size={"large"} color={color.GREEN_200} />
-                <Text style={styles.app_text}>
-                Database is loading...</Text>
+                <Text style={styles.app_text}>Data laden...</Text>
             </View>
         );
     }
-    
-    return(
+
+    return (
         <SafeAreaView style={[styles.style, { flex: 1 }]}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 20, gap: 10 }}>
-                <TouchableOpacity 
-                    onPress={() => navigation.goBack()} 
-                    style={[styles.button_layout, { flex: 1, borderColor: color.GREEN_500 }]}
-                >
-                    <Text style={styles.button_text}>
-                ← Terug naar Home</Text>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.button_layout, { flex: 1, borderColor: color.GREEN_500 }]}>
+                    <Text style={styles.button_text}>← Terug naar Home</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity // <-- Knop voor toevoegen toegevoegd
+                <TouchableOpacity 
                     onPress={() => setShowAddModal(true)}
                     style={[styles.button_layout, { flex: 1, borderColor: color.BLUE_700 }]}
                 >
-                    <Text style={styles.button_text}>
-                + Nieuwe Afdeling</Text>
+                    <Text style={styles.button_text}>+ Nieuwe Afdeling</Text>
                 </TouchableOpacity>
             </View>
-            
-            <Text style={[styles.app_header, 
-        { marginBottom: 20 }]}>
-                Afdelingen Overzicht
-            </Text>
-            
+
+            <Text style={[styles.app_header, { marginBottom: 10 }]}>Afdelingen Beheer</Text>
+
+            {/* --- FILTER KNOPPEN --- */}
+            <View style={{ paddingHorizontal: 20, marginBottom: 10 }}>
+                {/* Switcher */}
+                <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 10 }}>
+                    <TouchableOpacity onPress={() => setMode('current')} style={{ padding: 10, backgroundColor: mode === 'current' ? color.GREEN_600 : '#ddd', borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+                        <Text style={{ color: mode === 'current' ? 'white' : 'black' }}>Huidige Stand</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setMode('single')} style={{ padding: 10, backgroundColor: mode === 'single' ? color.GREEN_600 : '#ddd' }}>
+                        <Text style={{ color: mode === 'single' ? 'white' : 'black' }}>Dag</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setMode('range')} style={{ padding: 10, backgroundColor: mode === 'range' ? color.GREEN_600 : '#ddd', borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+                        <Text style={{ color: mode === 'range' ? 'white' : 'black' }}>Periode</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Datum Velden - alleen zichtbaar in historische modus */}
+                {(mode === 'single' || mode === 'range') && (
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
+                        {mode === 'single' ? (
+                            <TouchableOpacity onPress={() => { setPickerType('date'); setShowPicker(true); }} style={{ padding: 10, backgroundColor: 'white', borderWidth: 1, borderColor: '#ccc', borderRadius: 8 }}>
+                                <Text>📅 Datum: {formatDate(date)}</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <>
+                                <TouchableOpacity onPress={() => { setPickerType('start'); setShowPicker(true); }} style={{ padding: 10, backgroundColor: 'white', borderWidth: 1, borderColor: '#ccc', borderRadius: 8 }}>
+                                    <Text>Van: {formatDate(startDate)}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => { setPickerType('end'); setShowPicker(true); }} style={{ padding: 10, backgroundColor: 'white', borderWidth: 1, borderColor: '#ccc', borderRadius: 8 }}>
+                                    <Text>Tot: {formatDate(endDate)}</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                    </View>
+                )}
+
+                {showPicker && (
+                    <DateTimePicker
+                        value={pickerType === 'date' ? date : (pickerType === 'start' ? startDate : endDate)}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                )}
+            </View>
+
             {renderChart()}
             <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc', marginHorizontal: 20 }} />
 
-            <TouchableOpacity 
-                onPress={handleShareData} 
-                style={[styles.button_layout, { marginHorizontal: 20, marginTop: 10, backgroundColor: color.BLUE_500 }]}
-            >
-                <Text style={styles.button_text}>
-            📧 Deel Overzicht via E-mail</Text>
+            <TouchableOpacity onPress={handleShareData} style={[styles.button_layout, { marginHorizontal: 20, marginTop: 10, backgroundColor: color.BLUE_500 }]}>
+                <Text style={styles.button_text}>📧 Deel Rapport</Text>
             </TouchableOpacity>
 
-            {departments.length === 0 ? (
-                <View style={styles.center}>
-                    <Text style={styles.app_text}>
-                        Geen afdelingen gevonden
-                    </Text>
-                    <TouchableOpacity 
-                        onPress={handleRefresh} 
-                        style={styles.button_layout}
-                    >
-                        <Text style={styles.button_text}>
-                    Ververs</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <FlatList
-                    style={{ flex: 1, width: '100%' }}
-                    contentContainerStyle={{ padding: 20 }}
-                    data={departments}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.name}
-                    onRefresh={handleRefresh}
-                    refreshing={loading} 
-                />
-            )}
+            {/* Lijst van afdelingen */}
+            <FlatList
+                data={departments}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.name}
+                onRefresh={handleRefresh}
+                refreshing={loading}
+                contentContainerStyle={{ padding: 20 }}
+                ListEmptyComponent={<Text style={{textAlign: 'center', marginTop: 20}}>Geen data gevonden voor deze selectie.</Text>}
+            />
             
-            <TouchableOpacity 
-                onPress={handleRefresh} 
-                style={[styles.button_layout, { margin: 20 }]}
-            >
-                <Text style={styles.button_text}>
-            Ververs Data</Text>
+            <TouchableOpacity onPress={handleRefresh} style={[styles.button_layout, { margin: 20 }]}>
+                <Text style={styles.button_text}>Ververs Data</Text>
             </TouchableOpacity>
+
 
             {/* Add Department Modal Component */}
             <AddDepartmentModal
@@ -364,4 +422,4 @@ const DepartmentListScreen = () => {
     );
 };
 
-export default DepartmentListScreen;
+export default AdminPanel;

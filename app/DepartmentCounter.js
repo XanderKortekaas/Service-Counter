@@ -5,12 +5,12 @@ import { getDepartment, updateDepartment } from './_database';
 export default function DepartmentCounter({ departmentName }) {
   const [count, setCount] = useState(0);
 
+  // Data inladen bij opstarten
   useEffect(() => {
     const loadData = async () => {
       try {
         console.log(`🔍 Laden voor ${departmentName}...`);
         const savedCount = await getDepartment(departmentName);
-        
         setCount(savedCount || 0);
       } catch (error) {
         console.error(`⚠️ Fout bij laden ${departmentName}:`, error);
@@ -22,10 +22,8 @@ export default function DepartmentCounter({ departmentName }) {
   const increment = async () => {
     try {
       const newCount = count + 1;
-      setCount(newCount); 
-      
+      setCount(newCount); // Directe UI update
       console.log(`🆙 Updaten ${departmentName} naar ${newCount}...`);
-      
       await updateDepartment(departmentName, newCount);
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
@@ -35,10 +33,8 @@ export default function DepartmentCounter({ departmentName }) {
   const decrement = async () => {
     try {
       const newCount = count - 1;
-      setCount(newCount); 
-      
+      setCount(newCount); // Directe UI update
       console.log(`⬇️ Updaten ${departmentName} naar ${newCount}...`);
-      
       await updateDepartment(departmentName, newCount);
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);

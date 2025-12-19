@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { updateDepartment } from './_database';
+import styles from "./_styleSheet";
 
 /**
  * Een teller component voor één afdeling.
- * @param {Object} props
- * @param {string} props.departmentName - Naam van de afdeling.
- * @param {number} props.initialCount - De initiële telling (geladen door index.tsx).
- * @param {() => Promise<void>} props.onUpdate - Callback die wordt aangeroepen na elke succesvolle +1 of -1.
  */
 export default function DepartmentCounter({ departmentName, initialCount, onUpdate }) {
   const [count, setCount] = useState(initialCount || 0);
@@ -49,6 +46,7 @@ export default function DepartmentCounter({ departmentName, initialCount, onUpda
   
   return (
     <View style={styles.container}>
+      {/* 'title' is behouden als naam in het stylesheet voor de afdelingsnaam */}
       <Text style={styles.title}>{departmentName}</Text>
       
       <View style={styles.counterContainer}>
@@ -58,72 +56,19 @@ export default function DepartmentCounter({ departmentName, initialCount, onUpda
       <View style={styles.buttonRow}>
         <TouchableOpacity 
           onPress={decrement} 
-          style={[styles.button, styles.buttonRed]}
+          style={[styles.counterButton, styles.buttonRed]}
           disabled={count <= 0} 
         >
           <Text style={styles.buttonText}> -1 </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity onPress={increment} style={styles.button}>
+        <TouchableOpacity 
+          onPress={increment} 
+          style={styles.counterButton}
+        >
           <Text style={styles.buttonText}> +1 </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    padding: 20,
-    marginVertical: 10,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  counterContainer: {
-    backgroundColor: '#f0f0f0',
-    padding: 15,
-    borderRadius: 50,
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  countText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2e78b7',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 15,
-  },
-  button: {
-    backgroundColor: '#2e78b7',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  buttonRed: {
-    backgroundColor: '#d32f2f',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-});

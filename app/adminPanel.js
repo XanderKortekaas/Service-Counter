@@ -155,7 +155,6 @@ const AdminPanel = () => {
         </View>
     );
 
-    // Dit is de enige echte return van de AdminPanel component
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: color.GRAY_900 }}>
             <FlatList

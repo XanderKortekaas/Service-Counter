@@ -35,6 +35,38 @@ const styles = StyleSheet.create({
         "flexDirection": "column",
         "alignItems": "center"
     },
+
+    // --- DepartmentCounter Stijlen (Vroegere bovenste gedeelte) ---
+    "container": {
+        "backgroundColor": Colors.GRAY_700, // Aangepast naar jouw thema
+        "padding": 20,
+        "marginVertical": 10,
+        "borderRadius": 10,
+        "shadowColor": '#000',
+        "shadowOffset": { width: 0, height: 2 },
+        "shadowOpacity": 0.1,
+        "shadowRadius": 4,
+        "elevation": 3,
+        "alignItems": 'center',
+        "width": '100%',
+    },
+    "counterContainer": {
+        "backgroundColor": Colors.GRAY_800,
+        "padding": 15,
+        "borderRadius": 50,
+        "width": 80,
+        "height": 80,
+        "justifyContent": 'center',
+        "alignItems": 'center',
+        "marginBottom": 15,
+    },
+    "countText": {
+        "fontSize": 32,
+        "fontWeight": 'bold',
+        "color": Colors.BLUE_700,
+    },
+
+    // --- Counter Layout ---
     "counter_container": {
         "flex": 1,
         "alignItems": "center",
@@ -73,13 +105,13 @@ const styles = StyleSheet.create({
         "fontSize": 36,
     },
     "department": {
-        "color": Colors.BLUE_700,
         "color": Colors.GRAY_100,
         "fontSize": 18,
     },
     "scrollview_style":{
         "flex": 1 
     },  
+
     // --- Buttons & Tellers ---
     "button_group": {
         "flexDirection": "row",
@@ -120,7 +152,6 @@ const styles = StyleSheet.create({
         'justifyContent': 'center',
         'alignItems': 'center',
     },
-    // Samengevoegde modal_content stijlen
     "modal_content": { 
         "alignItems": "center",
         'backgroundColor': Colors.GRAY_700,
@@ -159,12 +190,14 @@ const styles = StyleSheet.create({
         "color": Colors.GRAY_200,
         "alignSelf": 'center',
     },
+
     // --- Grafiek style ---
     "graph_style":{
         "borderBottomWidth": 1, 
         "borderBottomColor": '#ccc', 
         "marginHorizontal": 20, 
     },
+
     // --- Specifieke Statistische & Input Stijlen ---
     "customer_text": {
         "fontSize": 20,
@@ -176,13 +209,14 @@ const styles = StyleSheet.create({
         'borderRadius': 10, 
         'marginTop': 20, 
     },
+
     // --- Datum kiezer ---
     "date_picker_style":{
         'flexDirection': 'row', 
         'justifyContent': 'center', 
         'marginBottom': 10,
     },
-    "title": { // Modal Titel
+    "title": { // Modal Titel & Department Titel
         'fontSize': 20,
         'fontWeight': 'bold',
         'color': Colors.BLUE_700,
@@ -201,11 +235,17 @@ const styles = StyleSheet.create({
     },
     "buttonRow": {
         "flexDirection": "row",
-        "flexWrap": "wrap",
         "justifyContent": "center",
-        "marginTop": 40,
-        "marginBottom": 20,
-        "gap": 20,
+        "gap": 15,
+        "marginTop": 10,
+    },
+    "counterButton": { 
+        'backgroundColor': Colors.BLUE_700,
+        'paddingVertical': 10,
+        'paddingHorizontal': 20,
+        'borderRadius': 25,
+        'minWidth': 80,
+        'alignItems': 'center',
     },
     "cancelButton": {
         'backgroundColor': Colors.GRAY_900,
@@ -223,8 +263,12 @@ const styles = StyleSheet.create({
         "marginBottom": 50,
         "marginTop": 50,
     },
+    "buttonRed": {
+        "backgroundColor": Colors.Red_900,
+    },
     "buttonText": { 
         'fontSize': 16,
+        'fontWeight': 'bold',
         'color': Colors.GRAY_200,
     },
     "logo": {

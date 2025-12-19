@@ -1,66 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// updateDepartment is de enige database functie die dit component nodig heeft.
-import { updateDepartment } from './_database'; 
+import { updateDepartment } from './_database';
 
 /**
  * Een teller component voor één afdeling.
- * * @param {string} departmentName - Naam van de afdeling.
- * @param {number} initialCount - De initiële telling (geladen door index.tsx).
- * @param {function} onUpdate - Callback die wordt aangeroepen na elke succesvolle +1 of -1.
+ * @param {Object} props
+ * @param {string} props.departmentName - Naam van de afdeling.
+ * @param {number} props.initialCount - De initiële telling (geladen door index.tsx).
+ * @param {() => Promise<void>} props.onUpdate - Callback die wordt aangeroepen na elke succesvolle +1 of -1.
  */
 export default function DepartmentCounter({ departmentName, initialCount, onUpdate }) {
-  // Gebruik de prop initialCount (of 0) als startwaarde
   const [count, setCount] = useState(initialCount || 0);
-
-  // Zorgt ervoor dat de interne state (count) wordt gesynchroniseerd 
-  // met de externe prop (initialCount) wanneer de parent (index.tsx) ververst.
+  
   useEffect(() => {
     setCount(initialCount || 0);
   }, [initialCount]);
   
-
   const increment = async () => {
     try {
       const newCount = count + 1;
       setCount(newCount); 
       
-      // Database update (lokaal en Supabase)
       await updateDepartment(departmentName, newCount);
       
-      // Roep de callback aan om de totale telling op de indexpagina bij te werken
       if (onUpdate) onUpdate(); 
-
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
-      // Optioneel: bij fout de telling terugzetten
       setCount(count); 
     }
   };
-
+  
   const decrement = async () => {
     try {
-      // Zorg ervoor dat de telling niet onder nul gaat
       const newCount = Math.max(0, count - 1); 
       
-      // Alleen doorgaan als de telling daadwerkelijk verandert
       if (newCount === count) return;
       
       setCount(newCount); 
       
-      // Database update (lokaal en Supabase)
       await updateDepartment(departmentName, newCount);
       
-      // Roep de callback aan
       if (onUpdate) onUpdate(); 
-
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
-      // Optioneel: bij fout de telling terugzetten
       setCount(count);
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{departmentName}</Text>
@@ -68,18 +54,18 @@ export default function DepartmentCounter({ departmentName, initialCount, onUpda
       <View style={styles.counterContainer}>
         <Text style={styles.countText}>{count}</Text>
       </View>
-
+      
       <View style={styles.buttonRow}>
         <TouchableOpacity 
-            onPress={decrement} 
-            style={[styles.button, styles.buttonRed]}
-            disabled={count <= 0} // Knop uitschakelen als telling 0 is
+          onPress={decrement} 
+          style={[styles.button, styles.buttonRed]}
+          disabled={count <= 0} 
         >
-            <Text style={styles.buttonText}>-1</Text>
+          <Text style={styles.buttonText}> -1 </Text>
         </TouchableOpacity>
-
+        
         <TouchableOpacity onPress={increment} style={styles.button}>
-            <Text style={styles.buttonText}>+1 Stem</Text>
+          <Text style={styles.buttonText}> +1 </Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -4,10 +4,8 @@ import * as SQLite from 'expo-sqlite';
 import 'react-native-url-polyfill/auto';
 
 const SUPABASE_URL = 'https://camsifkzljqvhccbvkyy.supabase.co';
-// LET OP: Het is veiliger om deze sleutel in een .env bestand te zetten, maar voor nu werkt dit.
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbXNpZmt6bGpxdmhjY2J2a3l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MzkxNzEsImV4cCI6MjA4MDExNTE3MX0.htmoTRzz2ZUToee7EL2sZ6zNScQkHasR_lFB1EKbzPk';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbXNpZmt6bGpxdmhjY2J2a3l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MzkxNzEsImV4cCI6MjA4MDExNTE1MjV9.htmoTRzz2ZUToee7EL2sZ6zNScQkHasR_lFB1EKbzPk';
 
-// Supabase client initialisatie
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     storage: AsyncStorage,
@@ -17,17 +15,16 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 });
 
-// SQLite database instantie
 let db = null;
 
 const initDatabase = async () => {
   if (!db) {
     try {
-      // Gebruik openDatabaseAsync om de database te openen/creëren
       db = await SQLite.openDatabaseAsync('myDatabase.db');
-      console.log('Local Database geopend');
+      console.log('✅ Database succesvol geopend');
     } catch (error) {
-      console.error("Fout bij het openen van de database:", error);
+      console.error("❌ Fout bij het openen van de database:", error);
+      throw error;
     }
   }
   return db;
@@ -43,54 +40,28 @@ export const createTables = async () => {
         last_updated TEXT
       );
     `);
-
-    // Probeer de 'last_updated' kolom toe te voegen als deze nog niet bestaat (voor migratiedoeleinden)
     try {
         await database.execAsync('ALTER TABLE departments ADD COLUMN last_updated TEXT');
-    } catch (e) {
-        // Kolom bestaat al, of andere ALTER fout die genegeerd kan worden
-    }
-
-    console.log('Lokale tabellen gecontroleerd');
+    } catch (e) {}
   } catch (error) {
     console.error("Fout bij aanmaken tabellen:", error);
   }
 };
 
-// --- FUNCTIES VOOR HET UPDATEN VAN DE LIVE STAND (JOUW CODE) ---
-
 export const updateDepartment = async (name, newCount) => {
   const database = await initDatabase();
   const now = new Date().toISOString(); 
-
   try {
-    // 1. Lokale database updaten
     await database.runAsync(
       'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
       [name, newCount, now]
     );
-    console.log(`Lokaal geüpdatet: ${name} -> ${newCount}`);
-
-    // 2. Supabase synchroniseren
-    const { error } = await supabase
+    await supabase
       .from('HelpdeskDB') 
-      .upsert(
-        { 
-          Name: name,          
-          Count: newCount,     
-          Last_Updated: now    
-        },
-        { onConflict: 'Name' }
-      );
-
-    if (error) {
-        console.error("❌ HelpdeskDB Update Fout:", JSON.stringify(error, null, 2));
-    } else {
-      console.log("✅ Succes: Stand bijgewerkt in Supabase!");
-    }
-
+      .upsert({ Name: name, Count: newCount, Last_Updated: now }, { onConflict: 'Name' });
   } catch (error) {
-    console.error(`Fout bij updaten department ${name}:`, error);
+    console.error(`❌ Fout bij updaten ${name}:`, error);
+    throw error;
   }
 };
 
@@ -101,83 +72,33 @@ export const getDepartment = async (name) => {
       'SELECT count FROM departments WHERE name = ?',
       [name]
     );
-    if (result) return result.count;
-    return 0; 
+    return result ? result.count : 0;
   } catch (error) {
-    console.error(`Fout bij ophalen department ${name}:`, error);
     return 0;
   }
 };
 
-// --- AANGEPASTE FUNCTIE VOOR LIJST & GRAFIEKEN ---
-
-export const getAllDepartments = async (startDate = null, endDate = null) => {
-  
-  // SCENARIO 1: Historische data (via Datumkiezer in Grafiek scherm)
-  if (startDate && endDate) {
-      try {
-          const startISO = startDate.toISOString();
-          const endISO = endDate.toISOString();
-          console.log(`🔍 Supabase Logs ophalen van ${startISO} tot ${endISO}`);
-
-          // Haal logs op uit de 'Logs' tabel (Backup tabel)
-          const { data, error } = await supabase
-              .from('Logs') 
-              .select('department_name, new_count, timestamp')
-              .gte('timestamp', startISO)
-              .lte('timestamp', endISO)
-              .order('timestamp', { ascending: false });
-
-          if (error) throw error;
-
-          // Filter dubbele afdelingen eruit (pak de nieuwste in de selectie)
-          const uniqueDepartments = {};
-          data.forEach(row => {
-              if (!uniqueDepartments[row.department_name]) {
-                  uniqueDepartments[row.department_name] = {
-                      // We mappen de Supabase kolomnamen naar de app namen
-                      name: row.department_name,
-                      count: row.new_count 
-                  };
-              }
-          });
-
-          return Object.values(uniqueDepartments);
-
-      } catch (error) {
-          console.error("Fout bij ophalen logs uit Supabase:", error);
-          return [];
-      }
-  }
-
-  // SCENARIO 2: Huidige data (Als er geen datums worden meegegeven)
-  // Dit is handig als je oude code deze functie nog gebruikt zonder argumenten
+export const getAllDepartments = async (startTime = null, endTime = null) => {
   const database = await initDatabase();
-  // Zorg ervoor dat de 'count' kolom wordt geselecteerd voor de Admin Panel weergave
-  const results = await database.getAllAsync('SELECT name, count FROM departments ORDER BY name'); 
-  return results;
+  try {
+    const results = await database.getAllAsync('SELECT name, count, last_updated FROM departments ORDER BY name'); 
+    return results;
+  } catch (e) {
+    console.error("Fout bij ophalen departments:", e);
+    return [];
+  }
 };
-
-// --- SYNCHRONISATIE (JOUW CODE) ---
 
 export const syncAndCleanup = async () => {
   const database = await initDatabase();
-  console.log("Start synchronisatie...");
-
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  // 1. Download de meest recente gegevens van Supabase (afgelopen 30 dagen)
+  
   const { data, error } = await supabase
     .from('HelpdeskDB')
     .select('*')
     .gt('Last_Updated', thirtyDaysAgo.toISOString()); 
     
-  if (error) {
-    console.error("Fout bij synchronisatie met Supabase:", error);
-  }
-
-  // 2. Data samenvoegen/overschrijven in lokale DB
   if (data && data.length > 0) {
     for (const item of data) {
       await database.runAsync(
@@ -185,94 +106,39 @@ export const syncAndCleanup = async () => {
         [item.Name, item.Count, item.Last_Updated]
       );
     }
-    console.log(`${data.length} items gedownload.`);
   }
-
-  // 3. Oude data lokaal opschonen
   await database.runAsync(
     'DELETE FROM departments WHERE last_updated < ?',
     [thirtyDaysAgo.toISOString()]
   );
-  console.log("Oude data opgeschoond.");
 };
-
-// ===========================================
-// NIEUWE FUNCTIES VOOR ADMIN PANEL & INDEX
-// ===========================================
 
 export const addDepartment = async (name) => {
   const database = await initDatabase();
   const now = new Date().toISOString(); 
-  
   try {
-    // Voeg toe aan lokale SQLite DB
     await database.runAsync(
       'INSERT INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
-      [name, 0, now] // Start met count 0
+      [name, 0, now]
     );
-
-    // Voeg toe aan Supabase
     const { error } = await supabase
       .from('HelpdeskDB') 
-      .insert(
-        { 
-            Name: name,          
-            Count: 0,     
-            Last_Updated: now    
-        },
-      );
-
+      .insert({ Name: name, Count: 0, Last_Updated: now });
     if (error) {
-      // Rol terug als Supabase faalt (of gooi een fout om de gebruiker te waarschuwen)
       await database.runAsync('DELETE FROM departments WHERE name = ?', [name]);
-      console.error("❌ HelpdeskDB Toevoegen Fout:", JSON.stringify(error, null, 2));
-      throw new Error("Kon afdeling niet toevoegen aan Supabase. Deze naam bestaat mogelijk al.");
-    } else {
-      console.log(`✅ Succes: Afdeling ${name} toegevoegd!`);
+      throw new Error(error.message);
     }
-
   } catch (error) {
-    console.error(`Fout bij toevoegen department ${name}:`, error);
-    throw error; 
+    throw error;
   }
 };
 
 export const deleteDepartment = async (name) => {
   const database = await initDatabase();
-  
   try {
-    // Verwijder uit lokale SQLite DB
     await database.runAsync('DELETE FROM departments WHERE name = ?', [name]);
-
-    // Verwijder uit Supabase
-    const { error } = await supabase
-      .from('HelpdeskDB') 
-      .delete()
-      .match({ Name: name });
-
-    if (error) {
-      console.error("❌ HelpdeskDB Verwijderen Fout:", JSON.stringify(error, null, 2));
-      throw new Error("Kon afdeling niet verwijderen uit Supabase.");
-    } else {
-      console.log(`✅ Succes: Afdeling ${name} verwijderd!`);
-    }
-
+    await supabase.from('HelpdeskDB').delete().match({ Name: name });
   } catch (error) {
-    console.error(`Fout bij verwijderen department ${name}:`, error);
     throw error;
   }
 };
-
-export const getAllDepartmentNames = async () => {
-  const database = await initDatabase();
-  try {
-    // Selecteer alleen de naam (nodig voor Index.tsx)
-    const results = await database.getAllAsync('SELECT name FROM departments ORDER BY name'); 
-    return results.map(item => item.name); 
-  } catch (error) {
-    console.error("Fout bij ophalen alle afdelingsnamen:", error);
-    return [];
-  }
-};
-
-export { db };

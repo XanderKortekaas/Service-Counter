@@ -74,7 +74,8 @@ const styles = StyleSheet.create({
     },
     "department": {
         "color": Colors.BLUE_700,
-        "fontSize": 36,
+        "color": Colors.GRAY_100,
+        "fontSize": 18,
     },
     "scrollview_style":{
         "flex": 1 
@@ -93,21 +94,23 @@ const styles = StyleSheet.create({
         "marginLeft": 25,
     },
     "button_layout": {
-        "backgroundColor": Colors.GRAY_800,
+        "backgroundColor": Colors.GRAY_575,
         "borderRadius": 5,
-        "minWidth": 75,
-        "maxWidth": 150,
         "borderColor": Colors.GREEN_500,
         "borderWidth": 1,
         "alignItems": "center",
     },
     "button_text": {
-        "fontSize": 25,
-        "color": Colors.GRAY_300,
+        "fontSize": 24,
+        "color": Colors.OLIVE_500,
+        "textAlign": 'center'
     },
     "button_titel_text": {
         "fontSize": 25,
         "color": Colors.GREEN_500,
+    },
+    "admin_button":{
+        "alignContent":'center',
     },
 
     // --- Modal Algemeen ---
@@ -156,20 +159,31 @@ const styles = StyleSheet.create({
         "color": Colors.GRAY_200,
         "alignSelf": 'center',
     },
-    
+    // --- Grafiek style ---
+    "graph_style":{
+        "borderBottomWidth": 1, 
+        "borderBottomColor": '#ccc', 
+        "marginHorizontal": 20, 
+    },
     // --- Specifieke Statistische & Input Stijlen ---
     "customer_text": {
         "fontSize": 20,
         "color": Colors.VIOLET_500,
     },
     "customer_stats_layout": {
-        backgroundColor: Colors.GRAY_700, 
-        padding: 15, 
-        borderRadius: 10, 
-        marginTop: 20, 
+        'backgroundColor': Colors.GRAY_700, 
+        'padding': 15, 
+        'borderRadius': 10, 
+        'marginTop': 20, 
+    },
+    // --- Datum kiezer ---
+    "date_picker_style":{
+        'flexDirection': 'row', 
+        'justifyContent': 'center', 
+        'marginBottom': 10,
     },
     "title": { // Modal Titel
-        'fontSize': 24,
+        'fontSize': 20,
         'fontWeight': 'bold',
         'color': Colors.BLUE_700,
         'marginBottom': 20,

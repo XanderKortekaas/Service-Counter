@@ -1,33 +1,30 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import * as SQLite from 'expo-sqlite';
 import 'react-native-url-polyfill/auto';
 
 const SUPABASE_URL = 'https://camsifkzljqvhccbvkyy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbXNpZmt6bGpxdmhjY2J2a3l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MzkxNzEsImV4cCI6MjA4MDExNTE1MjV9.htmoTRzz2ZUToee7EL2sZ6zNScQkHasR_lFB1EKbzPk';
+// Gecorrigeerde API Key: alle extra tekst is verwijderd om de 'Invalid API Key' error te fixen
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbXNpZmt6bGpxdmhjY2J2a3l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MzkxNzEsImV4cCI6MjA4MDExNTE3MX0.htmoTRzz2ZUToee7EL2sZ6zNScQkHasR_lFB1EKbzPk';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let db = null;
 
+// Verbeterde initialisatie om de NullPointerException te voorkomen
 const initDatabase = async () => {
-  if (!db) {
-    try {
-      db = await SQLite.openDatabaseAsync('myDatabase.db');
-      console.log('✅ Database succesvol geopend');
-    } catch (error) {
-      console.error("❌ Fout bij het openen van de database:", error);
-      throw error;
+  if (db !== null) return db; 
+  
+  try {
+    db = await SQLite.openDatabaseAsync('myDatabase.db');
+    if (!db) {
+      throw new Error("Database initialisatie mislukt");
     }
+    console.log('✅ Database succesvol geopend');
+    return db;
+  } catch (error) {
+    console.error("❌ Fout bij het openen van de database:", error);
+    throw error;
   }
-  return db;
 };
 
 export const createTables = async () => {
@@ -42,7 +39,9 @@ export const createTables = async () => {
     `);
     try {
         await database.execAsync('ALTER TABLE departments ADD COLUMN last_updated TEXT');
-    } catch (e) {}
+    } catch (e) {
+        // Kolom bestaat waarschijnlijk al
+    }
   } catch (error) {
     console.error("Fout bij aanmaken tabellen:", error);
   }
@@ -56,6 +55,7 @@ export const updateDepartment = async (name, newCount) => {
       'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
       [name, newCount, now]
     );
+    // Let op: 'HelpdeskDB' en kolomnamen 'Name', 'Count', 'Last_Updated' moeten exact matchen met Supabase
     await supabase
       .from('HelpdeskDB') 
       .upsert({ Name: name, Count: newCount, Last_Updated: now }, { onConflict: 'Name' });
@@ -78,14 +78,45 @@ export const getDepartment = async (name) => {
   }
 };
 
-export const getAllDepartments = async (startTime = null, endTime = null) => {
-  const database = await initDatabase();
+export const getAllDepartments = async () => {
   try {
+    const database = await initDatabase();
     const results = await database.getAllAsync('SELECT name, count, last_updated FROM departments ORDER BY name'); 
     return results;
   } catch (e) {
     console.error("Fout bij ophalen departments:", e);
     return [];
+  }
+};
+
+export const renameDepartment = async (oldName, newName) => {
+  const database = await initDatabase();
+  const now = new Date().toISOString();
+  try {
+    // 1. Update lokaal in SQLite
+    await database.runAsync(
+      'UPDATE departments SET name = ?, last_updated = ? WHERE name = ?',
+      [newName, now, oldName]
+    );
+
+    // 2. Update in Supabase (we deleten de oude en voegen de nieuwe toe om primaire sleutel fouten te voorkomen)
+    const { data: existingData } = await supabase
+      .from('HelpdeskDB')
+      .select('Count')
+      .eq('Name', oldName)
+      .single();
+
+    if (existingData) {
+      await supabase.from('HelpdeskDB').delete().match({ Name: oldName });
+      await supabase.from('HelpdeskDB').insert({ 
+        Name: newName, 
+        Count: existingData.Count, 
+        Last_Updated: now 
+      });
+    }
+  } catch (error) {
+    console.error(`❌ Fout bij hernoemen van ${oldName}:`, error);
+    throw error;
   }
 };
 

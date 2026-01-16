@@ -40,7 +40,6 @@ export default function Index() {
     }, []);
 
     const handleCounterUpdate = useCallback(async () => {
-        // Herlaad de afdelingen en telling na elke stem
         await loadDepartments();
     }, [loadDepartments]);
 
@@ -61,15 +60,16 @@ export default function Index() {
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        await syncAndCleanup(); // Eerst syncen
-        await loadDepartments(); // Daarna laden
+        await syncAndCleanup(); 
+        await loadDepartments(); 
         setRefreshing(false);
     }, [loadDepartments]);
 
     if (!dbReady) {
         return (
             <View style={[styles.style, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color={Colors.GREEN_200} />
+                {/* Aangepast naar VIOLET uit je kleurenpalet */}
+                <ActivityIndicator size="large" color={Colors.VIOLET_500} />
                 <Text style={styles.app_text}>Database wordt geladen...</Text>
             </View>
         );
@@ -78,45 +78,41 @@ export default function Index() {
     return (
         <View style={[styles.style, { flex: 1 }]}>
             <ScrollView
-                style={[ styles.scrollview_style]}
+                style={styles.scrollview_style}
                 contentContainerStyle={{ padding: 20 }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        tintColor={Colors.GREEN_200}
+                        tintColor={Colors.VIOLET_500}
                     />
                 }
             >
-                {/* Header en Admin Panel knop */}
-                <View style={styles.app}>
+                <View style={styles.center}>
                     <Text style={styles.app_header_text}>
                         Welkom bij de Christelijke Hogeschool Ede
                     </Text>
 
-                    {/* Totaal Statistiek */}
+                    {/* Gebruikt nu je gecentreerde statistieken layout */}
                     <View style={styles.customer_stats_layout}>
-                        <Text style={[styles.department, { textAlign: 'center', marginBottom: 5 }]}>
+                        <Text style={styles.title}>
                             Totaal Aantal Bezoekers
                         </Text>
-                        <Text style={[styles.customer_text, { textAlign: 'center', fontSize: 48 }]}>
+                        <Text style={styles.customer_text}>
                             {totalCount}
                         </Text>
                     </View>
                 
-                    
-                    {/* FIX: Gebruik Link asChild rond de TouchableOpacity */}
-                    <TouchableOpacity style={[styles.modal_button, { marginTop: 20 }]}>
+                    {/* De Link asChild structuur gecorrigeerd voor navigatie */}
+                    <TouchableOpacity style = {[styles.modal_button, { marginTop: 20, marginBottom: 20 }]}>
                         <Link href="/adminPanel" asChild>
-                            <Text style={styles.customer_text}>Admin Panel</Text>
+                            <Text style={styles.modalButtonText}>Admin Panel</Text>
                         </Link>
                     </TouchableOpacity>
-
                 </View>
             
-                {/* Departments */}
-                <View style={styles.counter_container}>
-                    <Text style={[styles.counter_section_h1, { marginBottom: 20, textAlign: 'center' }]}>
+                <View style={styles.container}>
+                    <Text style={[styles.countText, { marginBottom: 20, textAlign: 'center' }]}>
                         Afdelingen
                     </Text>
 

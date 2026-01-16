@@ -46,27 +46,26 @@ export default function DepartmentCounter({ departmentName, initialCount, onUpda
   
   return (
     <View style={styles.container}>
-      {/* 'title' is behouden als naam in het stylesheet voor de afdelingsnaam */}
       <Text style={styles.title}>{departmentName}</Text>
       
       <View style={styles.counterContainer}>
         <Text style={styles.countText}>{count}</Text>
       </View>
       
-      <View style={styles.buttonRow}>
+      <View style={styles.button_layout}>
+        <TouchableOpacity 
+          onPress={increment} 
+          style={styles.counterButton}
+        >
+          <Text style={styles.buttonText}> +1 </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity 
           onPress={decrement} 
           style={[styles.counterButton, styles.buttonRed]}
           disabled={count <= 0} 
         >
           <Text style={styles.buttonText}> -1 </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={increment} 
-          style={styles.counterButton}
-        >
-          <Text style={styles.buttonText}> +1 </Text>
         </TouchableOpacity>
       </View>
     </View>

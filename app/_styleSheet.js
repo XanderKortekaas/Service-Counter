@@ -2,279 +2,174 @@ import { StyleSheet } from "react-native";
 import Colors from './_color';
 
 const styles = StyleSheet.create({
-    // --- Algemene Layout & Text Stijlen ---
+    // --- Algemene Layout ---
     "style": {
         "backgroundColor": Colors.GRAY_800,
         "flex": 1,
-        "justifyContent": "center",
-        "alignItems": "center"
+        "width": '100%',
     },
-    "app": {},
     "center": {
         "flex": 1,
         "justifyContent": "center",
         "alignItems": "center",
         "padding": 20,
     },
-    "app_header_container": {
-        "alignItems": "center",
-        "marginBottom": 30,
-        "paddingTop": 10
-    },
     "app_header_text": {
-        "fontSize": 48,
+        "fontSize": 32,
+        "fontWeight": "bold",
         "color": Colors.GRAY_100,
+        "textAlign": "center",
+        "marginBottom": 20,
     },
     "app_text": {
-        "fontSize": 24,
-        "color": Colors.OLIVE_500,
-        "marginBottom": 25,
+        "fontSize": 18,
+        "color": Colors.GRAY_300,
+        "textAlign": "center",
     },
-    "app-container": {
+    "scrollview_style": {
         "flex": 1,
-        "flexDirection": "column",
-        "alignItems": "center"
     },
-
-    // --- DepartmentCounter Stijlen (Vroegere bovenste gedeelte) ---
+    // --- Kaart Styling (Cards) ---
     "container": {
-        "backgroundColor": Colors.GRAY_700, // Aangepast naar jouw thema
+        "backgroundColor": Colors.GRAY_700,
         "padding": 20,
         "marginVertical": 10,
-        "borderRadius": 10,
-        "shadowColor": '#000',
-        "shadowOffset": { width: 0, height: 2 },
-        "shadowOpacity": 0.1,
-        "shadowRadius": 4,
-        "elevation": 3,
-        "alignItems": 'center',
+        "borderRadius": 15,
         "width": '100%',
+        "minHeight": 250,
+        "shadowColor": '#000',
+        "shadowOffset": { width: 0, height: 4 },
+        "shadowOpacity": 0.3,
+        "shadowRadius": 5,
+        "elevation": 8,
+        "alignItems": 'center',
     },
     "counterContainer": {
         "backgroundColor": Colors.GRAY_800,
         "padding": 15,
         "borderRadius": 50,
-        "width": 80,
-        "height": 80,
+        "width": 120,
+        "height": 120,
         "justifyContent": 'center',
         "alignItems": 'center',
         "marginBottom": 15,
+        "borderWidth": 2,
+        "borderColor": Colors.BLUE_700,
     },
     "countText": {
-        "fontSize": 32,
+        "fontSize": 36,
         "fontWeight": 'bold',
         "color": Colors.BLUE_700,
     },
-
-    // --- Counter Layout ---
-    "counter_container": {
-        "flex": 1,
-        "alignItems": "center",
-        "height": '100%',
-    },
-    "counter_viewer": {
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-        "justifyContent": "center",
-        "marginTop": 40,
-        "marginBottom": 20,
-        "gap": 20,
-    },
-    "counter_section": {
-        "flexDirection": 'row',
-        "alignItems": 'center',
-        "justifyContent": 'space-between',
-    },
-    "counter_section_h1": {
-        "flex": 1,
-        "color": Colors.GREEN_200,
-        "fontSize": 40,
-    },
-    "department_section": {
-        "flexDirection": 'row',
-        "alignItems": 'center',
-        "justifyContent": 'space-between',
-        "padding": 20,
-    },
-    "department_name_text": {
-        "fontSize": 36,
-        "color": Colors.GREEN_500,
-    },
-    "department_count": {
-        "color": Colors.OLIVE_500,
-        "fontSize": 36,
-    },
-    "department": {
+    "title": {
+        "fontSize": 22,
+        "fontWeight": 'bold',
         "color": Colors.GRAY_100,
-        "fontSize": 18,
+        "marginBottom": 15,
+        "textAlign": 'center',
     },
-    "scrollview_style":{
-        "flex": 1 
-    },  
 
-    // --- Buttons & Tellers ---
-    "button_group": {
-        "flexDirection": "row",
-    },
-    "button": { 
-        "flex": 1, 
-        "paddingVertical": 15, 
-        "borderRadius": 10,
-        "alignItems": "center",
-        "marginTop": 10,
-        "marginRight": 25,
-        "marginLeft": 25,
-    },
+    // --- Knoppen (Consistent Design) ---
     "button_layout": {
-        "backgroundColor": Colors.GRAY_575,
-        "borderRadius": 5,
-        "borderColor": Colors.GREEN_500,
+        "backgroundColor": Colors.GRAY_700,
+        "borderRadius": 10,
         "borderWidth": 1,
+        "borderColor": Colors.GRAY_500,
         "alignItems": "center",
+        "justifyContent": "center",
     },
     "button_text": {
-        "fontSize": 24,
-        "color": Colors.OLIVE_500,
-        "textAlign": 'center'
-    },
-    "button_titel_text": {
-        "fontSize": 25,
-        "color": Colors.GREEN_500,
-    },
-    "admin_button":{
-        "alignContent":'center',
-    },
-
-    // --- Modal Algemeen ---
-    "overlay": {
-        'flex': 1,
-        'backgroundColor': 'rgba(0, 0, 0, 0.7)',
-        'justifyContent': 'center',
-        'alignItems': 'center',
-    },
-    "modal_content": { 
-        "alignItems": "center",
-        'backgroundColor': Colors.GRAY_700,
-        'borderRadius': 15,
-        'padding': 25,
-        'shadowColor': '#000',
-        'shadowOffset': { width: 0, height: 2 },
-        'shadowOpacity': 0.25,
-        'shadowRadius': 3.84,
-        'elevation': 5,
-    },
-    "modal_button_layout":{
-        "flexDirection": 'row',
-        "minWidth": 75,
-        "maxWidth": 150,
-        "gap": 10,
-    },
-    "modal_button": {
-        "backgroundColor": Colors.GRAY_800,
-        "borderColor":Colors.VIOLET_500,
-        "borderWidth": 1,
-        "borderRadius": 5,
-        "marginBottom": 50,
-        "marginTop": 50,
-        "paddingHorizontal": 20,
-        "paddingVertical": 10,
-        "alignItems": 'center',
-    },
-    "modal_button_text": {
-        "fontSize": 20,
-        "color": Colors.VIOLET_500,
-        "alignSelf": 'center',
-    },
-    "modal_text": {
-        "fontSize": 20,
-        "color": Colors.GRAY_200,
-        "alignSelf": 'center',
-    },
-
-    // --- Grafiek style ---
-    "graph_style":{
-        "borderBottomWidth": 1, 
-        "borderBottomColor": '#ccc', 
-        "marginHorizontal": 20, 
-    },
-
-    // --- Specifieke Statistische & Input Stijlen ---
-    "customer_text": {
-        "fontSize": 20,
-        "color": Colors.VIOLET_500,
-    },
-    "customer_stats_layout": {
-        'backgroundColor': Colors.GRAY_700, 
-        'padding': 15, 
-        'borderRadius': 10, 
-        'marginTop': 20, 
-    },
-
-    // --- Datum kiezer ---
-    "date_picker_style":{
-        'flexDirection': 'row', 
-        'justifyContent': 'center', 
-        'marginBottom': 10,
-    },
-    "title": { // Modal Titel & Department Titel
-        'fontSize': 20,
-        'fontWeight': 'bold',
-        'color': Colors.BLUE_700,
-        'marginBottom': 20,
-        'textAlign': 'center',
-    },
-    "input": { // Modal Input
-        'backgroundColor': Colors.GRAY_800,
-        'borderRadius': 10,
-        'padding': 15,
-        'fontSize': 18,
-        'color': Colors.GREEN_200,
-        'borderWidth': 1,
-        'borderColor': Colors.GREEN_200,
-        'marginBottom': 20,
-    },
-    "buttonRow": {
-        "flexDirection": "row",
-        "justifyContent": "center",
-        "gap": 15,
-        "marginTop": 10,
+        "fontSize": 16,
+        "fontWeight": "bold",
+        "color": Colors.GRAY_100,
     },
     "counterButton": { 
-        'backgroundColor': Colors.BLUE_700,
-        'paddingVertical': 10,
-        'paddingHorizontal': 20,
-        'borderRadius': 25,
-        'minWidth': 80,
-        'alignItems': 'center',
-    },
-    "cancelButton": {
-        'backgroundColor': Colors.GRAY_900,
-        "borderColor": Colors.GRAY_200,
-        "borderWidth": 1,
-        "borderRadius": 5,
-        "marginBottom": 50,
-        "marginTop": 50,
-    },
-    "addButton": {
-        'backgroundColor': Colors.GRAY_900,
-        "borderColor": Colors.GREEN_500,
-        "borderWidth": 1,
-        "borderRadius": 5,
-        "marginBottom": 50,
-        "marginTop": 50,
+        "backgroundColor": Colors.BLUE_700,
+        "paddingVertical": 12,
+        "paddingHorizontal": 25,
+        "borderRadius": 30,
+        "minWidth": 100,
+        "alignItems": "center",
     },
     "buttonRed": {
         "backgroundColor": Colors.Red_900,
     },
     "buttonText": { 
-        'fontSize': 16,
-        'fontWeight': 'bold',
-        'color': Colors.GRAY_200,
+        "fontSize": 16,
+        "fontWeight": "bold",
+        "color": Colors.GRAY_100,
     },
-    "logo": {
-        "height": 100,
-        "width": 100
+
+    // --- Modal Styling ---
+    "overlay": {
+        "flex": 1,
+        "backgroundColor": 'rgba(0, 0, 0, 0.85)',
+        "justifyContent": "center",
+        "alignItems": "center",
     },
+    "modalContent": { 
+        "width": '85%',
+        "backgroundColor": Colors.GRAY_700,
+        "borderRadius": 20,
+        "padding": 25,
+        "alignItems": "center",
+    },
+    "modal_button": {
+        "backgroundColor": Colors.GRAY_800,
+        "borderColor": Colors.VIOLET_500,
+        "borderWidth": 1,
+        "borderRadius": 10,
+        "paddingVertical": 15,
+        "alignItems": 'center',
+        "width": '100%',
+    },
+    "modalButtonText": { 
+        "fontSize": 24,
+        "fontWeight": "bold",
+        "color": Colors.VIOLET_500,
+    },
+    "input": {
+        "width": '100%',
+        "backgroundColor": Colors.GRAY_800,
+        "borderRadius": 10,
+        "padding": 15,
+        "fontSize": 18,
+        "color": Colors.BLUE_700,
+        "borderWidth": 1,
+        "borderColor": Colors.BLUE_700,
+        "marginBottom": 20,
+    },
+    "button_group": {
+        "flexDirection": "row",
+        "gap": 10,
+    },
+    "button": {
+        "paddingVertical": 12,
+        "paddingHorizontal": 20,
+        "borderRadius": 10,
+        "minWidth": 100,
+        "alignItems": "center",
+    },
+    "cancelButton": {
+        "backgroundColor": Colors.GRAY_600,
+    },
+    "addButton": {
+        "backgroundColor": Colors.VIOLET_500,
+    },
+
+    // --- Overig ---
+    "customer_stats_layout": {
+        "backgroundColor": Colors.GRAY_700, 
+        "padding": 20, 
+        "borderRadius": 15, 
+        "marginTop": 20,
+        "alignItems": "center",
+    },
+    "customer_text": {
+        "fontSize": 48,
+        "fontWeight": "bold",
+        "color": Colors.VIOLET_500,
+    }
 });
 
 export default styles;

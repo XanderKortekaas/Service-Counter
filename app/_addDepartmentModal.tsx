@@ -16,7 +16,6 @@ import color from "./_color";
 import { getAllDepartments } from './_database';
 import styles from "./_styleSheet";
 
-// Interface voor de afdelingsdata
 interface Department {
     id: number;
     name: string;
@@ -49,38 +48,46 @@ const DepartmentListScreen = () => {
         loadDepartments();
     }
     
+    // De renderItem is aangepast naar de Card-styling met de cirkel
     const renderItem: ListRenderItem<Department> = ({ item }) => (
-        <View style={styles.department_section as ViewStyle}>
-            <Text style={styles.department as TextStyle}>
-                {item.name}
-            </Text>
-            <Text style={styles.department_count as TextStyle}>
-                {item.count}
-            </Text>
+        <View style={styles.container as ViewStyle}> 
+            <Text style={styles.title as TextStyle}>{item.name}</Text>
+            
+            <View style={styles.counterContainer as ViewStyle}>
+                <Text style={styles.countText as TextStyle}>{item.count}</Text>
+            </View>
         </View>
     );
     
-    if(loading){
+    if(loading && departments.length === 0){
         return(
-            <View style={styles.center as ViewStyle}>
-                <ActivityIndicator size={"large"} color={color.GREEN_200} />
-                <Text style={styles.app_text as TextStyle}>Database is loading...</Text>
+            <View style={[styles.style as ViewStyle, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size={"large"} color={color.VIOLET_500} />
+                <Text style={[styles.app_text as TextStyle, { marginTop: 10 }]}>Laden...</Text>
             </View>
         );
     }
     
     return(
         <SafeAreaView style={[styles.style as ViewStyle, { flex: 1 }]}>
-            {/* Back button */}
-            <TouchableOpacity 
-                onPress={() => navigation.goBack()} 
-                style={[styles.button_layout as ViewStyle, { margin: 20 }]}
-            >
-                <Text style={styles.button_text as TextStyle}>← Terug naar Home</Text>
-            </TouchableOpacity>
+            {/* Header Knoppen met de nieuwe grijze/blauwe styling */}
+            <View style={{ flexDirection: 'row', padding: 15, gap: 10 }}>
+                <TouchableOpacity 
+                    onPress={() => navigation.goBack()} 
+                    style={[styles.button_layout as ViewStyle, { flex: 1, paddingVertical: 12, backgroundColor: color.GRAY_700, borderColor: color.GRAY_500 }]}
+                >
+                    <Text style={[styles.button_text as TextStyle, { fontSize: 14 }]}>← Terug</Text>
+                </TouchableOpacity>
 
-            {/* Header */}
-            <Text style={[styles.app_header_text as TextStyle, { marginBottom: 20 }]}>
+                <TouchableOpacity 
+                    onPress={handleRefresh} 
+                    style={[styles.button_layout as ViewStyle, { flex: 1, paddingVertical: 12, backgroundColor: color.GRAY_700, borderColor: color.BLUE_700 }]}
+                >
+                    <Text style={[styles.button_text as TextStyle, { fontSize: 14, color: color.BLUE_700 }]}>Ververs</Text>
+                </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.app_header_text as TextStyle, { marginBottom: 10, fontSize: 24 }]}>
                 Afdelingen Overzicht
             </Text>
             
@@ -89,12 +96,11 @@ const DepartmentListScreen = () => {
                     <Text style={styles.app_text as TextStyle}>
                         Geen afdelingen gevonden
                     </Text>
-                    
                 </View>
             ) : (
                 <FlatList
-                    style={{ flex: 1, width: '100%' }}
-                    contentContainerStyle={{ padding: 20 }}
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
                     data={departments}
                     renderItem={renderItem}
                     keyExtractor={(item) => String(item.id)} 
@@ -102,14 +108,6 @@ const DepartmentListScreen = () => {
                     refreshing={loading} 
                 />
             )}
-            
-            {/* Bottom refresh button */}
-            <TouchableOpacity 
-                onPress={handleRefresh} 
-                style={[styles.button_layout as ViewStyle, { margin: 20 }]}
-            >
-                <Text style={styles.button_text as TextStyle}>Ververs Data</Text>
-            </TouchableOpacity>
         </SafeAreaView>
     );
 };

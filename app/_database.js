@@ -3,28 +3,35 @@ import * as SQLite from 'expo-sqlite';
 import 'react-native-url-polyfill/auto';
 
 const SUPABASE_URL = 'https://camsifkzljqvhccbvkyy.supabase.co';
-// Gecorrigeerde API Key: alle extra tekst is verwijderd om de 'Invalid API Key' error te fixen
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbXNpZmt6bGpxdmhjY2J2a3l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MzkxNzEsImV4cCI6MjA4MDExNTE3MX0.htmoTRzz2ZUToee7EL2sZ6zNScQkHasR_lFB1EKbzPk';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let db = null;
 
-// Verbeterde initialisatie om de NullPointerException te voorkomen
 const initDatabase = async () => {
-  if (db !== null) return db; 
-  
-  try {
-    db = await SQLite.openDatabaseAsync('myDatabase.db');
-    if (!db) {
-      throw new Error("Database initialisatie mislukt");
+    if (db) return db;
+    
+    try {
+        db = await SQLite.openDatabaseAsync('myDatabase.db');
+        await db.execAsync('PRAGMA journal_mode = WAL;'); 
+        return db;
+    } catch (error) {
+        db = null; 
+        console.error("❌ Fout bij openen database:", error);
+        throw error;
     }
-    console.log('✅ Database succesvol geopend');
-    return db;
-  } catch (error) {
-    console.error("❌ Fout bij het openen van de database:", error);
-    throw error;
-  }
+};
+
+export const getAllDepartments = async () => {
+    try {
+        const database = await initDatabase();
+        // Gebruik getFirstAsync of getAllAsync direct na init
+        return await database.getAllAsync('SELECT name, count, last_updated FROM departments ORDER BY name'); 
+    } catch (e) {
+        console.error("Fout bij ophalen departments:", e);
+        return [];
+    }
 };
 
 export const createTables = async () => {
@@ -55,7 +62,6 @@ export const updateDepartment = async (name, newCount) => {
       'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
       [name, newCount, now]
     );
-    // Let op: 'HelpdeskDB' en kolomnamen 'Name', 'Count', 'Last_Updated' moeten exact matchen met Supabase
     await supabase
       .from('HelpdeskDB') 
       .upsert({ Name: name, Count: newCount, Last_Updated: now }, { onConflict: 'Name' });
@@ -75,17 +81,6 @@ export const getDepartment = async (name) => {
     return result ? result.count : 0;
   } catch (error) {
     return 0;
-  }
-};
-
-export const getAllDepartments = async () => {
-  try {
-    const database = await initDatabase();
-    const results = await database.getAllAsync('SELECT name, count, last_updated FROM departments ORDER BY name'); 
-    return results;
-  } catch (e) {
-    console.error("Fout bij ophalen departments:", e);
-    return [];
   }
 };
 

@@ -8,163 +8,102 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let db = null;
+let initPromise = null;
 
+// Fix voor NullPointerException: garandeert dat db geladen is voor gebruik
 const initDatabase = async () => {
-    if (db) return db;
-    
-    try {
-        db = await SQLite.openDatabaseAsync('myDatabase.db');
-        await db.execAsync('PRAGMA journal_mode = WAL;'); 
-        return db;
-    } catch (error) {
-        db = null; 
-        console.error("❌ Fout bij openen database:", error);
-        throw error;
-    }
-};
+    if (db !== null) return db;
+    if (initPromise !== null) return initPromise;
 
-export const getAllDepartments = async () => {
-    try {
-        const database = await initDatabase();
-        // Gebruik getFirstAsync of getAllAsync direct na init
-        return await database.getAllAsync('SELECT name, count, last_updated FROM departments ORDER BY name'); 
-    } catch (e) {
-        console.error("Fout bij ophalen departments:", e);
-        return [];
-    }
+    initPromise = (async () => {
+        try {
+            const openedDb = await SQLite.openDatabaseAsync('myDatabase.db');
+            if (!openedDb) throw new Error("Database kon niet worden geopend");
+            
+            db = openedDb;
+            await db.execAsync('PRAGMA journal_mode = WAL;'); 
+            return db;
+        } catch (error) {
+            initPromise = null; 
+            throw error;
+        }
+    })();
+
+    return initPromise;
 };
 
 export const createTables = async () => {
-  const database = await initDatabase();
-  try {
+    const database = await initDatabase();
     await database.execAsync(`
-      CREATE TABLE IF NOT EXISTS departments (
-        name TEXT PRIMARY KEY NOT NULL, 
-        count INTEGER DEFAULT 0,
-        last_updated TEXT
-      );
+        CREATE TABLE IF NOT EXISTS departments (
+            name TEXT PRIMARY KEY NOT NULL, 
+            count INTEGER DEFAULT 0,
+            last_updated TEXT
+        );
     `);
-    try {
-        await database.execAsync('ALTER TABLE departments ADD COLUMN last_updated TEXT');
-    } catch (e) {
-        // Kolom bestaat waarschijnlijk al
-    }
-  } catch (error) {
-    console.error("Fout bij aanmaken tabellen:", error);
-  }
 };
 
-export const updateDepartment = async (name, newCount) => {
-  const database = await initDatabase();
-  const now = new Date().toISOString(); 
-  try {
-    await database.runAsync(
-      'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
-      [name, newCount, now]
-    );
-    await supabase
-      .from('HelpdeskDB') 
-      .upsert({ Name: name, Count: newCount, Last_Updated: now }, { onConflict: 'Name' });
-  } catch (error) {
-    console.error(`❌ Fout bij updaten ${name}:`, error);
-    throw error;
-  }
-};
-
-export const getDepartment = async (name) => {
-  const database = await initDatabase();
-  try {
-    const result = await database.getFirstAsync(
-      'SELECT count FROM departments WHERE name = ?',
-      [name]
-    );
-    return result ? result.count : 0;
-  } catch (error) {
-    return 0;
-  }
-};
-
-export const renameDepartment = async (oldName, newName) => {
-  const database = await initDatabase();
-  const now = new Date().toISOString();
-  try {
-    // 1. Update lokaal in SQLite
-    await database.runAsync(
-      'UPDATE departments SET name = ?, last_updated = ? WHERE name = ?',
-      [newName, now, oldName]
-    );
-
-    // 2. Update in Supabase (we deleten de oude en voegen de nieuwe toe om primaire sleutel fouten te voorkomen)
-    const { data: existingData } = await supabase
-      .from('HelpdeskDB')
-      .select('Count')
-      .eq('Name', oldName)
-      .single();
-
-    if (existingData) {
-      await supabase.from('HelpdeskDB').delete().match({ Name: oldName });
-      await supabase.from('HelpdeskDB').insert({ 
-        Name: newName, 
-        Count: existingData.Count, 
-        Last_Updated: now 
-      });
-    }
-  } catch (error) {
-    console.error(`❌ Fout bij hernoemen van ${oldName}:`, error);
-    throw error;
-  }
-};
-
-export const syncAndCleanup = async () => {
-  const database = await initDatabase();
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  const { data, error } = await supabase
-    .from('HelpdeskDB')
-    .select('*')
-    .gt('Last_Updated', thirtyDaysAgo.toISOString()); 
-    
-  if (data && data.length > 0) {
-    for (const item of data) {
-      await database.runAsync(
-        'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
-        [item.Name, item.Count, item.Last_Updated]
-      );
-    }
-  }
-  await database.runAsync(
-    'DELETE FROM departments WHERE last_updated < ?',
-    [thirtyDaysAgo.toISOString()]
-  );
+export const getAllDepartments = async () => {
+    const database = await initDatabase();
+    return await database.getAllAsync('SELECT name, count, last_updated FROM departments ORDER BY name');
 };
 
 export const addDepartment = async (name) => {
-  const database = await initDatabase();
-  const now = new Date().toISOString(); 
-  try {
-    await database.runAsync(
-      'INSERT INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
-      [name, 0, now]
-    );
-    const { error } = await supabase
-      .from('HelpdeskDB') 
-      .insert({ Name: name, Count: 0, Last_Updated: now });
-    if (error) {
-      await database.runAsync('DELETE FROM departments WHERE name = ?', [name]);
-      throw new Error(error.message);
-    }
-  } catch (error) {
-    throw error;
-  }
+    const database = await initDatabase();
+    const now = new Date().toISOString();
+    await database.runAsync('INSERT INTO departments (name, count, last_updated) VALUES (?, 0, ?)', [name, now]);
+    await supabase.from('HelpdeskDB').insert({ Name: name, Count: 0, Last_Updated: now });
+};
+
+export const updateDepartment = async (name, newCount) => {
+    const database = await initDatabase();
+    const now = new Date().toISOString();
+    await database.runAsync('INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)', [name, newCount, now]);
+    await supabase.from('HelpdeskDB').upsert({ Name: name, Count: newCount, Last_Updated: now }, { onConflict: 'Name' });
+};
+
+export const renameDepartment = async (oldName, newName) => {
+    const database = await initDatabase();
+    const now = new Date().toISOString();
+    
+    // Haal huidige telling op uit Supabase
+    const { data } = await supabase.from('HelpdeskDB').select('Count').eq('Name', oldName).single();
+    const currentCount = data ? data.Count : 0;
+
+    // Update Supabase (Delete + Insert voor hernoemen)
+    await supabase.from('HelpdeskDB').delete().eq('Name', oldName);
+    await supabase.from('HelpdeskDB').insert({ Name: newName, Count: currentCount, Last_Updated: now });
+    
+    // Update lokaal
+    await database.runAsync('UPDATE departments SET name = ?, last_updated = ? WHERE name = ?', [newName, now, oldName]);
 };
 
 export const deleteDepartment = async (name) => {
-  const database = await initDatabase();
-  try {
-    await database.runAsync('DELETE FROM departments WHERE name = ?', [name]);
+    const database = await initDatabase();
+    // Delete in Supabase vereist 'REPLICA IDENTITY FULL' op de tabel
     await supabase.from('HelpdeskDB').delete().match({ Name: name });
-  } catch (error) {
-    throw error;
-  }
+    await database.runAsync('DELETE FROM departments WHERE name = ?', [name]);
+};
+
+export const syncAndCleanup = async () => {
+    const database = await initDatabase();
+    const { data } = await supabase.from('HelpdeskDB').select('Name, Count, Last_Updated');
+    
+    if (data) {
+        const remoteNames = data.map(item => item.Name);
+        const allLocal = await database.getAllAsync('SELECT name FROM departments');
+        
+        for (const local of allLocal) {
+            if (!remoteNames.includes(local.name)) {
+                await database.runAsync('DELETE FROM departments WHERE name = ?', [local.name]);
+            }
+        }
+
+        for (const item of data) {
+            await database.runAsync(
+                'INSERT OR REPLACE INTO departments (name, count, last_updated) VALUES (?, ?, ?)',
+                [item.Name, item.Count, item.Last_Updated]
+            );
+        }
+    }
 };

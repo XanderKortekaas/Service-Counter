@@ -43,7 +43,7 @@ export default function Index() {
         await loadDepartments();
     }, [loadDepartments]);
 
-    useEffect(() => {
+   useEffect(() => {
         const initDB = async () => {
             try {
                 await createTables();
@@ -51,7 +51,7 @@ export default function Index() {
                 await loadDepartments();
                 setDbReady(true);
             } catch (error) {
-                console.error('Database initialization error:', error);
+                console.error('Fout bij initialisatie:', error);
             }
         };
         initDB();
@@ -68,7 +68,6 @@ export default function Index() {
     if (!dbReady) {
         return (
             <View style={[styles.style, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
-                {/* Aangepast naar VIOLET uit je kleurenpalet */}
                 <ActivityIndicator size="large" color={Colors.VIOLET_500} />
                 <Text style={styles.app_text}>Database wordt geladen...</Text>
             </View>
@@ -93,7 +92,6 @@ export default function Index() {
                         Welkom bij de Christelijke Hogeschool Ede
                     </Text>
 
-                    {/* Gebruikt nu je gecentreerde statistieken layout */}
                     <View style={styles.customer_stats_layout}>
                         <Text style={styles.title}>
                             Totaal Aantal Bezoekers
@@ -103,7 +101,6 @@ export default function Index() {
                         </Text>
                     </View>
                 
-                    {/* De Link asChild structuur gecorrigeerd voor navigatie */}
                     <TouchableOpacity style = {[styles.modal_button, { marginTop: 20, marginBottom: 20 }]}>
                         <Link href="/adminPanel" asChild>
                             <Text style={styles.modalButtonText}>Admin Panel</Text>

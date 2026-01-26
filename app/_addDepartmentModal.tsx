@@ -17,9 +17,10 @@ import { getAllDepartments } from './_database';
 import styles from "./_styleSheet";
 
 interface Department {
-    id: number;
-    name: string;
+    name: string; 
     count: number;
+    last_updated?: string; 
+    id?: string | number; 
 }
 
 const DepartmentListScreen = () => {

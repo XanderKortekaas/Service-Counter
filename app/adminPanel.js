@@ -1,6 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Alert, Dimensions, FlatList,
     Modal,
@@ -9,7 +9,6 @@ import {
 import { BarChart } from "react-native-chart-kit";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import color from "./_color";
-// Alle database functies inclusief renameDepartment
 import { addDepartment, createTables, deleteDepartment, getAllDepartments, renameDepartment } from './_database';
 import styles from "./_styleSheet";
 
@@ -20,13 +19,11 @@ const AdminPanel = () => {
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Modals states
     const [showAddModal, setShowAddModal] = useState(false); 
     const [showEditModal, setShowEditModal] = useState(false);
     const [newDeptName, setNewDeptName] = useState('');
     const [selectedDept, setSelectedDept] = useState({ oldName: '', newName: '' });
     
-    // Filter & Date states
     const [mode, setMode] = useState('current'); 
     const [date, setDate] = useState(new Date()); 
     const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - 7))); 
@@ -34,7 +31,6 @@ const AdminPanel = () => {
     const [showPicker, setShowPicker] = useState(false);
     const [pickerType, setPickerType] = useState('date'); 
 
-    // Data laden
     const loadDepartments = useCallback(async () => {
         setLoading(true);
         try {
@@ -42,7 +38,7 @@ const AdminPanel = () => {
             const data = await getAllDepartments();
             setDepartments(data);
         } catch (error) {
-            console.error("Fout bij laden:", error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -50,7 +46,6 @@ const AdminPanel = () => {
 
     useEffect(() => { loadDepartments(); }, [loadDepartments]);
 
-    // Nieuwe afdeling toevoegen
     const handleAddDepartment = async () => {
         if (!newDeptName.trim()) return;
         try {
@@ -63,7 +58,6 @@ const AdminPanel = () => {
         }
     };
 
-    // Afdeling hernoemen
     const handleRename = async () => {
         if (!selectedDept.newName.trim() || selectedDept.newName === selectedDept.oldName) {
             setShowEditModal(false);
@@ -78,8 +72,7 @@ const AdminPanel = () => {
         }
     };
 
-    // Afdeling verwijderen
-    const handleDeleteDepartment = (name) => {
+    const handleDeleteDepartment = useCallback((name) => {
         Alert.alert('Verwijderen', `Weet je zeker dat je ${name} wilt verwijderen?`, [
             { text: 'Annuleren', style: 'cancel' },
             { text: 'Verwijderen', style: 'destructive', onPress: async () => {
@@ -87,7 +80,7 @@ const AdminPanel = () => {
                 await loadDepartments();
             }}
         ]);
-    };
+    }, [loadDepartments]);
 
     const onDateChange = (event, selectedDate) => {
         setShowPicker(false);
@@ -100,9 +93,15 @@ const AdminPanel = () => {
 
     const formatDate = (rawDate) => rawDate.toLocaleDateString('nl-NL');
 
-    const renderHeader = () => (
+    const chartData = useMemo(() => ({
+        labels: departments.length > 0 ? departments.map(d => d.name) : ["..."], 
+        datasets: [{ data: departments.length > 0 ? departments.map(d => d.count) : [0] }] 
+    }), [departments]);
+
+    const chartWidth = useMemo(() => Math.max(screenWidth - 40, departments.length * 90), [departments.length]);
+
+    const renderHeader = useMemo(() => (
         <View>
-            {/* Navigatie & Actie Knoppen */}
             <View style={{ flexDirection: 'row', padding: 15, gap: 10 }}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.button_layout, { flex: 1, backgroundColor: color.GRAY_700, borderColor: color.GRAY_500 }]}>
                     <Text style={styles.button_text}>Terug</Text>
@@ -115,7 +114,6 @@ const AdminPanel = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Filter Modes */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 15 }}>
                 <TouchableOpacity onPress={() => setMode('current')} style={{ padding: 12, backgroundColor: mode === 'current' ? color.VIOLET_500 : color.GRAY_600, borderTopLeftRadius: 10, borderBottomLeftRadius: 10 }}>
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>Huidig</Text>
@@ -128,7 +126,6 @@ const AdminPanel = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Datum Selectors */}
             {(mode === 'single' || mode === 'range') && (
                 <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 15 }}>
                     <TouchableOpacity onPress={() => { setPickerType(mode === 'single' ? 'date' : 'start'); setShowPicker(true); }} style={{ padding: 10, backgroundColor: color.GRAY_700, borderRadius: 8, borderWidth: 1, borderColor: color.BLUE_700 }}>
@@ -142,14 +139,10 @@ const AdminPanel = () => {
                 </View>
             )}
 
-            {/* Scrollbare Grafiek */}
             <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 10 }}>
                 <BarChart
-                    data={{ 
-                        labels: departments.length > 0 ? departments.map(d => d.name) : ["..."], 
-                        datasets: [{ data: departments.length > 0 ? departments.map(d => d.count) : [0] }] 
-                    }}
-                    width={Math.max(screenWidth - 40, departments.length * 90)} 
+                    data={chartData}
+                    width={chartWidth} 
                     height={260}
                     chartConfig={{ 
                         backgroundColor: color.GRAY_800,
@@ -165,7 +158,36 @@ const AdminPanel = () => {
                 />
             </ScrollView>
         </View>
-    );
+    ), [mode, date, startDate, endDate, chartData, chartWidth, navigation, loadDepartments]);
+
+    const renderItem = useCallback(({ item }) => (
+        <View style={styles.container}> 
+            <Text style={styles.title}>{item.name}</Text>
+            <View style={styles.counterContainer}>
+                <Text style={styles.countText}>{item.count}</Text>
+            </View>
+            
+            {mode === 'current' && (
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
+                    <TouchableOpacity 
+                        onPress={() => {
+                            setSelectedDept({ oldName: item.name, newName: item.name });
+                            setShowEditModal(true);
+                        }}
+                        style={[styles.counterButton, { backgroundColor: color.BLUE_700, flex: 1, minWidth: 0 }]}
+                    >
+                        <Text style={styles.buttonText}>Bewerken</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        onPress={() => handleDeleteDepartment(item.name)}
+                        style={[styles.counterButton, styles.buttonRed, { flex: 1, minWidth: 0 }]}
+                    >
+                        <Text style={styles.buttonText}>Verwijderen</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+        </View>
+    ), [mode, handleDeleteDepartment]);
 
     return (
         <SafeAreaView style={styles.style}>
@@ -174,38 +196,10 @@ const AdminPanel = () => {
                 keyExtractor={(item) => item.name}
                 ListHeaderComponent={renderHeader}
                 contentContainerStyle={{ paddingHorizontal: 20 }}
-                renderItem={({ item }) => (
-                    <View style={styles.container}> 
-                        <Text style={styles.title}>{item.name}</Text>
-                        <View style={styles.counterContainer}>
-                            <Text style={styles.countText}>{item.count}</Text>
-                        </View>
-                        
-                        {mode === 'current' && (
-                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
-                                <TouchableOpacity 
-                                    onPress={() => {
-                                        setSelectedDept({ oldName: item.name, newName: item.name });
-                                        setShowEditModal(true);
-                                    }}
-                                    style={[styles.counterButton, { backgroundColor: color.BLUE_700, flex: 1, minWidth: 0 }]}
-                                >
-                                    <Text style={styles.buttonText}>Bewerken</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity 
-                                    onPress={() => handleDeleteDepartment(item.name)}
-                                    style={[styles.counterButton, styles.buttonRed, { flex: 1, minWidth: 0 }]}
-                                >
-                                    <Text style={styles.buttonText}>Verwijderen</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
-                )}
+                renderItem={renderItem}
                 ListFooterComponent={<View style={{ height: 40 }} />}
             />
 
-            {/* Modal voor Nieuwe Afdeling */}
             <Modal visible={showAddModal} transparent animationType="fade">
                 <View style={styles.overlay}>
                     <View style={styles.modalContent}>
@@ -230,7 +224,6 @@ const AdminPanel = () => {
                 </View>
             </Modal>
 
-            {/* Modal voor Hernoemen */}
             <Modal visible={showEditModal} transparent animationType="fade">
                 <View style={styles.overlay}>
                     <View style={styles.modalContent}>

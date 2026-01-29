@@ -1,48 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { updateDepartment } from './_database';
 import styles from "./_styleSheet";
 
-/**
- * Een teller component voor één afdeling.
- */
-export default function DepartmentCounter({ departmentName, initialCount, onUpdate }) {
+const DepartmentCounter = ({ departmentName, initialCount, onUpdate }) => {
   const [count, setCount] = useState(initialCount || 0);
   
   useEffect(() => {
     setCount(initialCount || 0);
   }, [initialCount]);
   
-  const increment = async () => {
+  const increment = useCallback(async () => {
+    const prevCount = count;
+    const newCount = prevCount + 1;
+    
+    setCount(newCount); 
+    
     try {
-      const newCount = count + 1;
-      setCount(newCount); 
-      
       await updateDepartment(departmentName, newCount);
-      
       if (onUpdate) onUpdate(); 
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
-      setCount(count); 
+      setCount(prevCount); 
     }
-  };
+  }, [count, departmentName, onUpdate]);
   
-  const decrement = async () => {
+  const decrement = useCallback(async () => {
+    const prevCount = count;
+    const newCount = Math.max(0, prevCount - 1); 
+    
+    if (newCount === prevCount) return;
+    
+    setCount(newCount); 
+    
     try {
-      const newCount = Math.max(0, count - 1); 
-      
-      if (newCount === count) return;
-      
-      setCount(newCount); 
-      
       await updateDepartment(departmentName, newCount);
-      
       if (onUpdate) onUpdate(); 
     } catch (error) {
       console.error(`❌ Kon ${departmentName} niet opslaan:`, error);
-      setCount(count);
+      setCount(prevCount);
     }
-  };
+  }, [count, departmentName, onUpdate]);
   
   return (
     <View style={styles.container}>
@@ -70,4 +68,6 @@ export default function DepartmentCounter({ departmentName, initialCount, onUpda
       </View>
     </View>
   );
-}
+};
+
+export default memo(DepartmentCounter);
